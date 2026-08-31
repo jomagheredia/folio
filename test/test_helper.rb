@@ -1,6 +1,13 @@
 ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"
 require "rails/test_help"
+require "minitest/mock"
+
+module AuthenticationHelpers
+  def log_in_as(user, password: "password")
+    post login_path, params: { email: user.email, password: password }
+  end
+end
 
 module ActiveSupport
   class TestCase
@@ -12,4 +19,8 @@ module ActiveSupport
 
     # Add more helper methods to be used by all tests here...
   end
+end
+
+class ActionDispatch::IntegrationTest
+  include AuthenticationHelpers
 end

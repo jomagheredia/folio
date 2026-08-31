@@ -1,0 +1,14 @@
+# frozen_string_literal: true
+
+class CreateTags < ActiveRecord::Migration[8.0]
+  def change
+    create_table :tags do |t|
+      t.references :user, null: false, foreign_key: true
+      t.string :name, null: false
+
+      t.timestamps
+    end
+
+    add_index :tags, "user_id, LOWER(name)", unique: true, name: "index_tags_on_user_id_and_lower_name"
+  end
+end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 Rails.application.routes.draw do
   get  "login",  to: "sessions#new",     as: :login
   post "login",  to: "sessions#create"
@@ -10,6 +12,19 @@ Rails.application.routes.draw do
 
   get "dashboard", to: "dashboard#show", as: :dashboard
   get "settings",  to: "settings#show",  as: :settings
+
+  resources :bookmarks do
+    collection do
+      post :preview, to: "bookmarks/previews#create"
+    end
+  end
+  resources :tags, only: %i[ index show update destroy ]
+  resources :collections do
+    member do
+      post :add_bookmark
+      delete :remove_bookmark
+    end
+  end
 
   namespace :admin do
     root to: redirect("/admin/users")

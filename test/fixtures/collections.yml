@@ -1,0 +1,9 @@
+spring:
+  user: one
+  name: Spring campaign refs
+  notes: For the launch
+  ai_summary:
+
+other_user:
+  user: two
+  name: Private board
