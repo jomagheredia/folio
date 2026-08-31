@@ -16,6 +16,7 @@ The app is built on the **Build New** starter (Rails 8, Inertia.js, React 19, Po
 
 - Save a link by pasting a URL; Folio fills in title, a short snippet, and a preview image when the page provides them.
 - Save a visual reference by uploading an image or pasting an image URL; the picture is the card.
+- Full **CRUD** on your library: create, view, edit, and delete bookmarks, tags, and collections.
 - Tag bookmarks by theme, browse a tag, rename or delete tags.
 - Search by title, description, URL, and tag names; filter to links or visuals.
 - Group bookmarks into named collections; a bookmark can live in more than one collection.
@@ -132,33 +133,48 @@ Relationships: every bookmark, tag, collection, and share belongs to one user. B
 
 ## Milestone 1 — Library & organize
 
-A signed-in user can run Folio as a personal library: save links and visuals, tag them, search, and group them into collections. No email or AI yet.
+A signed-in user can run Folio as a personal library: full **CRUD** (create, view, edit, delete) on bookmarks, tags, and collections, plus search. No email or AI yet.
 
 ### What gets built
+
+**CRUD (required)**
+
+Every library object in this milestone has create, read, update, and delete. Empty states and confirmation on delete are in scope.
+
+- **Bookmarks (links and visuals)**
+  - **Create** — paste a URL, or add a visual (upload or image URL).
+  - **Read** — library of cards (newest first); open a bookmark to see its title, URL or image, description, tags, and collections.
+  - **Update** — edit title, description, and URL (for links); replace the image (for visuals); change tags and which collections it belongs to.
+  - **Delete** — remove the bookmark from the library (it leaves every collection it was in).
+- **Tags**
+  - **Create** — add a tag by typing a name on a bookmark (autocomplete if it already exists).
+  - **Read** — see tags on a bookmark and in a tag list; open a tag to see its bookmarks.
+  - **Update** — rename a tag (the new name shows everywhere it was used).
+  - **Delete** — remove the tag from the library (bookmarks stay; the label is gone).
+- **Collections**
+  - **Create** — make a named collection.
+  - **Read** — collection page with name, notes, and bookmark cards; library can filter to one collection.
+  - **Update** — rename; edit notes; add or remove bookmarks (a bookmark can be in more than one collection).
+  - **Delete** — delete the collection (bookmarks stay in the library).
 
 **Save links (website)**
 
 - From the app: paste a URL. Folio fills in title, a short snippet, and a preview image when the page provides them. You can edit the title, then save.
 - If that URL is already in your library, Folio tells you and still lets you save a second copy if you want.
 - After save, you land on the bookmark (ready for tags; AI comes in milestone 3).
-- You can edit title later, or delete the bookmark.
-- Library shows bookmarks as cards (newest first).
 
 **Visual references**
 
 - Add a visual by uploading an image (png, jpg, webp, gif) from your computer.
 - Save an image from a URL (paste a direct image link).
-- Each visual has a title you can edit, optional description, and shows as a card with the picture prominent.
-- Tags, collections, and search apply to visuals the same way they apply to links.
-- You can replace the image or delete the visual.
+- Each visual shows as a card with the picture prominent.
 
 **Tags & themes**
 
 - Add one or more tags on a bookmark (type a name; if it already exists, it autocomplete-matches).
-- Remove a tag from a bookmark.
+- Remove a tag from a bookmark without deleting the tag itself.
 - Click a tag (on a bookmark or in a tag list) to see all bookmarks with that tag.
 - Library can filter to “has this tag.”
-- Rename or delete a tag (delete removes it from bookmarks; it does not delete the bookmarks).
 
 **Search**
 
@@ -174,8 +190,6 @@ A signed-in user can run Folio as a personal library: save links and visuals, ta
 - Add or remove bookmarks from a collection (from the bookmark, or from the collection page).
 - A bookmark can live in more than one collection.
 - Collection page: name, your notes, the bookmarks as cards. (AI summary slot can exist as empty; filling it is milestone 3.)
-- Rename or delete a collection (bookmarks stay in your library).
-- Library can filter to one collection.
 
 ### What milestone 1 explicitly does NOT include
 
@@ -186,7 +200,7 @@ A signed-in user can run Folio as a personal library: save links and visuals, ta
 
 ### Done when
 
-A signed-in user can paste a URL and upload an image, see both as cards, tag them, find them with search and tag/type filters, and put them in named collections. Edit and delete work. Nothing in this milestone depends on OpenAI or Resend.
+A signed-in user can create, open, edit, and delete bookmarks (links and visuals), tags, and collections — full CRUD. They can paste a URL, upload an image, search and filter, and file items into collections. Nothing in this milestone depends on OpenAI or Resend.
 
 ---
 
