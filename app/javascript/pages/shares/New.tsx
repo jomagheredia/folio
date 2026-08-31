@@ -88,10 +88,10 @@ export default function SharesNew({
         <form onSubmit={submit} className="mt-8 max-w-2xl space-y-4">
           <div className="space-y-2">
             <label htmlFor="recipients">Recipients</label>
-            <textarea
+            <Input
               id="recipients"
+              name="recipients"
               required
-              className="form-control form-control-textarea"
               value={form.data.recipients}
               aria-invalid={!!errors.recipients}
               placeholder="friend@example.com, colleague@example.com"
