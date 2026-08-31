@@ -8,7 +8,7 @@ import { FlashNotice } from "@/components/FlashNotice"
 import { PageHeader } from "@/components/PageHeader"
 import { Button } from "@/components/ui/button"
 import { Select } from "@/components/ui/select"
-import type { BookmarkCardData, CollectionOption } from "@/types/folio"
+import type { BookmarkCardData, CollectionOption, ShareHistoryItem } from "@/types/folio"
 
 type AvailableBookmark = {
   id: number
@@ -20,9 +20,15 @@ type Props = {
   collection: CollectionOption
   bookmarks: BookmarkCardData[]
   available_bookmarks: AvailableBookmark[]
+  shares: ShareHistoryItem[]
 }
 
-export default function CollectionsShow({ collection, bookmarks, available_bookmarks }: Props) {
+export default function CollectionsShow({
+  collection,
+  bookmarks,
+  available_bookmarks,
+  shares = [],
+}: Props) {
   const addForm = useForm({ bookmark_id: available_bookmarks[0]?.id?.toString() ?? "" })
 
   const addBookmark = (event: FormEvent) => {
@@ -54,6 +60,11 @@ export default function CollectionsShow({ collection, bookmarks, available_bookm
           description={collection.notes || "A named set of finds from your library."}
           actions={
             <>
+              {bookmarks.length > 0 && (
+                <Button asChild>
+                  <Link href={`/shares/new?collection_id=${collection.id}`}>Share</Link>
+                </Button>
+              )}
               <Button asChild variant="secondary">
                 <Link href={`/bookmarks?collection_id=${collection.id}`}>View in library</Link>
               </Button>
@@ -123,6 +134,23 @@ export default function CollectionsShow({ collection, bookmarks, available_bookm
               </div>
             )}
           />
+        )}
+
+        {shares.length > 0 && (
+          <section className="mt-10 max-w-xl">
+            <h2>Sent</h2>
+            <ul className="mt-4 space-y-3">
+              {shares.map((share) => (
+                <li key={share.id} className="border-b border-hairline pb-3">
+                  <p>Sent to {share.recipients.join(", ")}</p>
+                  <p>
+                    {share.sent_at_label}
+                    {share.subject ? ` · ${share.subject}` : ""}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </section>
         )}
       </AppShell>
     </>

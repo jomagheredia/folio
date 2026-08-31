@@ -1,0 +1,7 @@
+<%= @sender.email %> shared finds with you via Folio.
+
+<% if @share.note.present? -%>
+<%= @share.note %>
+
+<% end -%>
+<%= @share.body %>

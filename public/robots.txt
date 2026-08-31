@@ -15,6 +15,7 @@ Disallow: /dashboard
 Disallow: /bookmarks
 Disallow: /tags
 Disallow: /collections
+Disallow: /shares
 Disallow: /settings
 Disallow: /profile
 Disallow: /letter_opener

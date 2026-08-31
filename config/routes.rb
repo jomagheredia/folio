@@ -25,6 +25,7 @@ Rails.application.routes.draw do
       delete :remove_bookmark
     end
   end
+  resources :shares, only: %i[ new create ]
 
   namespace :admin do
     root to: redirect("/admin/users")

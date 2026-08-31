@@ -1,4 +1,4 @@
-import { FormEvent } from "react"
+import { FormEvent, useMemo, useState } from "react"
 import { Head, Link, router, usePage } from "@inertiajs/react"
 import { AppShell } from "@/components/AppShell"
 import { BookmarkGrid } from "@/components/BookmarkGrid"
@@ -21,6 +21,21 @@ type Props = {
 export default function BookmarksIndex({ bookmarks, tags, collections, filters }: Props) {
   const { props } = usePage<PageProps<Props>>()
   const errors = props.errors ?? {}
+  const [selectedIds, setSelectedIds] = useState<number[]>([])
+
+  const toggleSelect = (bookmark: BookmarkCardData) => {
+    setSelectedIds((current) =>
+      current.includes(bookmark.id)
+        ? current.filter((id) => id !== bookmark.id)
+        : [...current, bookmark.id]
+    )
+  }
+
+  const shareHref = useMemo(() => {
+    const params = new URLSearchParams()
+    selectedIds.forEach((id) => params.append("bookmark_ids[]", String(id)))
+    return `/shares/new?${params.toString()}`
+  }, [selectedIds])
 
   const applyFilters = (next: Partial<LibraryFilters>) => {
     const kind = next.kind ?? filters.kind
@@ -113,6 +128,20 @@ export default function BookmarksIndex({ bookmarks, tags, collections, filters }
           </Button>
         </form>
 
+        {selectedIds.length > 0 && (
+          <div className="mt-4 flex flex-wrap items-center gap-3 rounded-md border border-hairline bg-surface px-4 py-3">
+            <p>
+              {selectedIds.length === 1 ? "1 selected" : `${selectedIds.length} selected`}
+            </p>
+            <Button asChild>
+              <Link href={shareHref}>Share selected</Link>
+            </Button>
+            <Button type="button" variant="ghost" onClick={() => setSelectedIds([])}>
+              Clear
+            </Button>
+          </div>
+        )}
+
         {(filters.tag_id || filters.collection_id) && (
           <div className="mt-4 flex flex-wrap items-center gap-2">
             {filters.tag_id && (
@@ -169,7 +198,11 @@ export default function BookmarksIndex({ bookmarks, tags, collections, filters }
             }
           />
         ) : (
-          <BookmarkGrid bookmarks={bookmarks} />
+          <BookmarkGrid
+            bookmarks={bookmarks}
+            selectedIds={selectedIds}
+            onToggleSelect={toggleSelect}
+          />
         )}
 
         {collections.length > 0 && !filters.collection_id && (
