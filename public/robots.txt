@@ -12,6 +12,9 @@ Disallow: /signup
 Disallow: /logout
 Disallow: /passwords
 Disallow: /dashboard
+Disallow: /bookmarks
+Disallow: /tags
+Disallow: /collections
 Disallow: /settings
 Disallow: /profile
 Disallow: /letter_opener

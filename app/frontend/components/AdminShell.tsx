@@ -4,7 +4,7 @@ import { MainNav, type NavItemDef } from "@/components/MainNav"
 
 const ADMIN_NAV_ITEMS: NavItemDef[] = [
   {
-    href: "/",
+    href: "/bookmarks",
     icon: Home,
     label: "App Home",
     match: () => false,

@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 class DashboardController < ApplicationController
   def show
-    render inertia: "Dashboard"
+    redirect_to bookmarks_path
   end
 end

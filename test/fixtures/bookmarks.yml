@@ -1,0 +1,20 @@
+one:
+  user: one
+  kind: 0
+  title: Example Article
+  url: https://example.com/article
+  description: A short snippet about design systems
+
+visual:
+  user: one
+  kind: 1
+  title: Brutalist facade
+  url:
+  description: Concrete and shadow
+
+other_user:
+  user: two
+  kind: 0
+  title: Someone else's link
+  url: https://example.com/secret
+  description: Private
