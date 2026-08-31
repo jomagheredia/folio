@@ -1,26 +1,25 @@
-# Folium
+# Folio
 
 > **About these build-plan files:** Everything in `_build_plan/` (this PRD and the per-milestone folders) is a **temporary documentation and guidance artifact** for the initial build-out of this codebase. These files are not functional — no code, configuration, runtime logic, tests, or deployment process should import, read, reference, or depend on anything in `_build_plan/`. Once the initial milestones are built and shipped, the entire `_build_plan/` folder is expected to be deleted from the codebase. Do not treat it as long-living documentation.
 
 ## What we're building
 
-Folium is a personal library for links and visual references you want to keep. You save pages from your browser (and images that inspire you), tag them by theme, and search them later. You can share a set of finds with friends or colleagues by email, and use AI to draft descriptions, suggest tags, and summarize a curated collection so organizing and sharing doesn’t become another job.
+Folio is a personal library for links and visual references you want to keep. You save pages from your browser (and images that inspire you), tag them by theme, and search them later. You can share a set of finds with friends or colleagues by email, and use AI to draft descriptions, suggest tags, and summarize a curated collection so organizing and sharing doesn’t become another job.
 
 This is a bookmarking app and an inspiration repository in one: URL bookmarks sit beside image references. The library is yours. Sharing is intentional (email), not a social network. AI is an assistant on save and on collections, not a chat product.
 
-The app is built on the **Build New** starter (Rails 8, Inertia.js, React 19, PostgreSQL). Work is split into three milestones: a usable personal library, then email sharing, then AI plus a Chrome add-on to grab open tabs.
+The app is built on the **Build New** starter (Rails 8, Inertia.js, React 19, PostgreSQL). Work is split into three milestones: a usable personal library, then email sharing, then AI assist.
 
 ---
 
 ### What the app does
 
-- Save a link by pasting a URL; Folium fills in title, a short snippet, and a preview image when the page provides them.
+- Save a link by pasting a URL; Folio fills in title, a short snippet, and a preview image when the page provides them.
 - Save a visual reference by uploading an image or pasting an image URL; the picture is the card.
-- Grab open Chrome tabs later via a small add-on (this tab, or all tabs in the window).
 - Tag bookmarks by theme, browse a tag, rename or delete tags.
 - Search by title, description, URL, and tag names; filter to links or visuals.
 - Group bookmarks into named collections; a bookmark can live in more than one collection.
-- Email a collection or a selection of bookmarks to friends or colleagues (no Folium account required to receive).
+- Email a collection or a selection of bookmarks to friends or colleagues (no Folio account required to receive).
 - See a simple history of who you emailed a collection to and when.
 - Ask AI to draft a description and suggest tags on a bookmark, and to summarize a collection for you (and for the share email).
 
@@ -48,7 +47,7 @@ These are the only outside vendors for v1. Credentials are obtained by the build
 - **Resend** — delivers share emails. Requires a Resend API key, and a verified sending domain when live. Used in milestone 2.
 - **Cloudflare R2** — stores uploaded images and preview files. Requires a Cloudflare account, R2 bucket, and access keys. Local development may keep files on disk; R2 is what production uses. Needed from milestone 1 (visuals and link previews).
 
-Search stays inside the app. Chrome tab grab is the browser add-on, not a third-party API.
+Search stays inside the app. Saving is paste-a-URL (and image upload) on the website; a browser add-on is a later release.
 
 ---
 
@@ -58,30 +57,29 @@ Search stays inside the app. Chrome tab grab is the browser add-on, not a third-
 
 - Native iOS/Android apps — use the website on a phone.
 - Public profiles / social feed — sharing is email, not a public gallery or follow graph.
-- Team workspaces — Folium is one person’s library; colleagues get an email, not a shared account.
+- Team workspaces — Folio is one person’s library; colleagues get an email, not a shared account.
 - Import from Pocket, Raindrop, or Chrome bookmark folders — start by saving new finds.
-- Read-it-later / full page archive — Folium stores the link, preview, and visuals, not a copy of every article for offline reading.
+- Read-it-later / full page archive — Folio stores the link, preview, and visuals, not a copy of every article for offline reading.
 - Payments and plans — one product, no billing.
 - Pick-your-AI / bring-your-own API key — one built-in AI (OpenAI).
 - Comments on items — no discussion threads on bookmarks.
-
-**Still in:** a Chrome add-on to save tabs (milestone 3). What stays out is replacing Chrome’s bookmark manager or syncing Chrome bookmark folders.
+- **Chrome add-on** (Save this tab / save all tabs in this window) — later release. v1 saves by pasting a URL in the website.
 
 **Feature-level cuts (locked in scoping):**
 
-- Other browsers (Safari, Firefox, Arc); auto-saving tabs in the background; highlighting or annotating pages.
-- Mood boards / freeform canvas; video, PDF, or Figma as their own types; in-extension screenshot button; reverse-image search; crop/filters in Folium.
+- Browser extensions of any kind; other browsers (Safari, Firefox, Arc); auto-saving tabs in the background; highlighting or annotating pages.
+- Mood boards / freeform canvas; video, PDF, or Figma as their own types; in-app screenshot tools; reverse-image search; crop/filters in Folio.
 - Nested tags, tag colors/icons, a global tag dictionary, tag aliases, automatic tag rules.
 - Saved searches, boolean search, search inside the full text of original articles, search across other people’s libraries, extra sort modes (newest-first only).
 - Nested collections, independent cover images, collaborative editing, public collection URLs, polished drag-and-drop boards.
-- Open/click tracking, scheduled send, Slack/iMessage/public-link share, original files as email attachments, recipient comments in Folium.
+- Open/click tracking, scheduled send, Slack/iMessage/public-link share, original files as email attachments, recipient comments in Folio.
 - Chat with the library, auto-filing into collections, “find similar on the web,” multiple AI write-up alternatives, translation.
 
 ---
 
 ### Data model
 
-What Folium remembers, in plain language.
+What Folio remembers, in plain language.
 
 #### User
 
@@ -134,14 +132,14 @@ Relationships: every bookmark, tag, collection, and share belongs to one user. B
 
 ## Milestone 1 — Library & organize
 
-A signed-in user can run Folium as a personal library: save links and visuals, tag them, search, and group them into collections. No email, AI, or Chrome add-on yet.
+A signed-in user can run Folio as a personal library: save links and visuals, tag them, search, and group them into collections. No email or AI yet.
 
 ### What gets built
 
 **Save links (website)**
 
-- From the app: paste a URL. Folium fills in title, a short snippet, and a preview image when the page provides them. You can edit the title, then save.
-- If that URL is already in your library, Folium tells you and still lets you save a second copy if you want.
+- From the app: paste a URL. Folio fills in title, a short snippet, and a preview image when the page provides them. You can edit the title, then save.
+- If that URL is already in your library, Folio tells you and still lets you save a second copy if you want.
 - After save, you land on the bookmark (ready for tags; AI comes in milestone 3).
 - You can edit title later, or delete the bookmark.
 - Library shows bookmarks as cards (newest first).
@@ -181,28 +179,27 @@ A signed-in user can run Folium as a personal library: save links and visuals, t
 
 ### What milestone 1 explicitly does NOT include
 
-- Chrome add-on, Save this tab, or Save all tabs
 - Email sharing or send history
 - AI describe, suggest tags, or collection summarize
-- Other browsers; importing Chrome/Pocket/Raindrop bookmarks
+- Browser add-ons; importing Pocket/Raindrop/Chrome bookmark folders
 - Mood boards, extra file types, nested tags, saved/boolean search, public collection URLs, team libraries
 
 ### Done when
 
-A signed-in user can paste a URL and upload an image, see both as cards, tag them, find them with search and tag/type filters, and put them in named collections. Edit and delete work. Nothing in this milestone depends on OpenAI, Resend, or a browser extension.
+A signed-in user can paste a URL and upload an image, see both as cards, tag them, find them with search and tag/type filters, and put them in named collections. Edit and delete work. Nothing in this milestone depends on OpenAI or Resend.
 
 ---
 
 ## Milestone 2 — Share
 
-You can send finds to friends or colleagues by email. Recipients do not need a Folium account. You can see that you already sent a collection.
+You can send finds to friends or colleagues by email. Recipients do not need a Folio account. You can see that you already sent a collection.
 
 ### What gets built
 
 - Share on a collection, and from a selection of bookmarks in the library.
 - A short form: one or more recipient emails, optional note from you, subject you can edit.
 - Body is pre-filled with titles, links, and thumbnails where we have them. You can edit before send. (Collection AI summary is included when it exists; in this milestone it will usually be empty until milestone 3.)
-- One click sends. Recipients get a readable email — no Folium account required.
+- One click sends. Recipients get a readable email — no Folio account required.
 - You can see past shares on that collection (who, when) so you know you already sent it.
 
 ### What milestone 2 explicitly does NOT include
@@ -211,9 +208,9 @@ You can send finds to friends or colleagues by email. Recipients do not need a F
 - Scheduled send
 - Share via Slack, iMessage, or a public link
 - Attaching original image files as email attachments (images appear inline or as links)
-- Recipients commenting back inside Folium
+- Recipients commenting back inside Folio
 - AI-written collection summaries (milestone 3 fills that; share still works without it)
-- Chrome add-on
+- Browser add-ons
 
 ### Done when
 
@@ -221,24 +218,16 @@ A signed-in user can email a collection or a selected set of bookmarks to one or
 
 ---
 
-## Milestone 3 — AI + Chrome
+## Milestone 3 — AI assist
 
-Saving and organizing get an assistant, and Chrome tabs can land in the library without pasting. Share emails can include a collection summary you generated and edited.
+Saving and organizing get an assistant. Share emails can include a collection summary you generated and edited.
 
 ### What gets built
-
-**AI assist**
 
 - On a bookmark: **Describe with AI** fills the description (you can edit before keeping it). For visuals, it looks at the image; for links, it uses the title, snippet, and preview.
 - **Suggest tags** — a short list you tap to add; you can ignore any of them.
 - On a collection: **Summarize** writes a short overview of what’s in the set. You can edit it. Share-by-email can include that summary.
 - If AI is busy or fails, you still save and tag by hand; nothing is blocked.
-
-**Chrome add-on**
-
-- A small Chrome add-on with **Save this tab** and **Save all tabs in this window**.
-- Each tab becomes a bookmark in the signed-in user’s library (same save path as paste-a-URL: title, snippet, preview when available).
-- After save, items show up in the library to review, tag, and file.
 
 ### What milestone 3 explicitly does NOT include
 
@@ -248,9 +237,9 @@ Saving and organizing get an assistant, and Chrome tabs can land in the library 
 - Picking a different AI model or bring-your-own key
 - Several alternative write-ups to pick from
 - Translating descriptions
-- Safari / Firefox / Arc; auto-save tabs in the background; sync with Chrome bookmark folders
+- Chrome add-on or any browser extension (later release)
 - Full copy of the article for offline reading; highlighting or annotating the page
 
 ### Done when
 
-A signed-in user can generate and edit an AI description and suggested tags on a bookmark, generate and edit a collection summary, and include that summary when emailing the collection. From Chrome, they can save the current tab or all tabs in the window into the same library. Hand-filing still works if AI is unavailable.
+A signed-in user can generate and edit an AI description and suggested tags on a bookmark, generate and edit a collection summary, and include that summary when emailing the collection. Hand-filing still works if AI is unavailable.

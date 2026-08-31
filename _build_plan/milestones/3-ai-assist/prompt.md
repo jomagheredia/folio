@@ -1,4 +1,4 @@
-# Milestone 3 — AI + Chrome
+# Milestone 3 — AI assist
 
 You are entering plan mode to plan and then build milestone 3 of this project.
 
@@ -12,7 +12,7 @@ You are entering plan mode to plan and then build milestone 3 of this project.
 1. Plan the implementation for **only** milestone 3 as defined in the PRD. Do not plan or build anything from later milestones.
 2. After the user confirms the plan, build only what is in milestone 3's scope.
 3. Verify your work against the "Done when" criteria for milestone 3 in the PRD.
-4. When complete, write a `milestone-log.md` in this folder (`_build_plan/milestones/3-ai-chrome/milestone-log.md`). Structure it as follows:
+4. When complete, write a `milestone-log.md` in this folder (`_build_plan/milestones/3-ai-assist/milestone-log.md`). Structure it as follows:
    - **Start with a `## What's new in the app` section at the very top.** This is a concise, human-readable, bulleted list of the main user-facing features or functionality that were added in this milestone — written so a non-technical reviewer can see at a glance what new things to expect in the app now that this milestone is done. Frame each bullet as a capability the user will now see or be able to do, not as a technical artifact. Keep it short and scannable.
    - Then include the implementation detail sections below for the next milestone's agent to reference:
      - What was built (files created, models added, routes added, etc.)
