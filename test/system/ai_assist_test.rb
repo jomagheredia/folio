@@ -56,18 +56,4 @@ class AiAssistSystemTest < ApplicationSystemTestCase
       click_on "Log in"
       assert_text "Library"
     end
-
-    def js_click(selector)
-      find(selector)
-      page.execute_script("document.querySelector(#{selector.to_json}).click()")
-    end
-
-    def fill_react_field(id, value)
-      page.execute_script(<<~JS)
-        const el = document.getElementById(#{id.to_json})
-        const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set
-        setter.call(el, #{value.to_json})
-        el.dispatchEvent(new Event("input", { bubbles: true }))
-      JS
-    end
 end

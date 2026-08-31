@@ -16,9 +16,9 @@ class LibrarySystemTest < ApplicationSystemTestCase
     click_on "Save a link"
     assert_text "Folio fills in a title"
 
-    fill_in "URL", with: "https://example.com/system-test"
-    fill_in "Title", with: "System test find"
-    find("[data-testid='save-bookmark']").click
+    fill_react_field("url", "https://example.com/system-test")
+    fill_react_field("title", "System test find")
+    js_click("[data-testid='save-bookmark']")
 
     assert_text "Saved to your library", wait: 10
     assert_text "System test find"
@@ -26,8 +26,8 @@ class LibrarySystemTest < ApplicationSystemTestCase
 
     visit collections_path
     click_on "New collection"
-    fill_in "Name", with: "Kitchen refs"
-    click_on "Create collection"
+    fill_react_field("name", "Kitchen refs")
+    js_click("form button[type='submit']")
     assert_text "Kitchen refs"
 
     visit bookmarks_path
