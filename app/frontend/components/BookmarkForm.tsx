@@ -1,10 +1,12 @@
 import * as React from "react"
 import { FormEvent } from "react"
 import { Link, useForm, usePage } from "@inertiajs/react"
+import { SuggestedTags } from "@/components/SuggestedTags"
 import { TagInput } from "@/components/TagInput"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
+import { requestAi } from "@/lib/ai"
 import { csrfToken } from "@/lib/csrf"
 import { cn } from "@/lib/utils"
 import type { BookmarkKind, CollectionOption, TagOption } from "@/types/folio"
@@ -61,6 +63,11 @@ export function BookmarkForm({
   const [previewError, setPreviewError] = React.useState<string | null>(null)
   const [duplicate, setDuplicate] = React.useState<PreviewResponse["existing"]>(null)
   const [imagePreview, setImagePreview] = React.useState<string | null>(bookmark.image_url)
+  const [describing, setDescribing] = React.useState(false)
+  const [describeError, setDescribeError] = React.useState<string | null>(null)
+  const [suggesting, setSuggesting] = React.useState(false)
+  const [suggestError, setSuggestError] = React.useState<string | null>(null)
+  const [suggestedTags, setSuggestedTags] = React.useState<string[]>([])
 
   React.useEffect(() => {
     if (!form.data.image) return
@@ -122,6 +129,50 @@ export function BookmarkForm({
     } else {
       form.patch(`/bookmarks/${bookmark.id}`, options)
     }
+  }
+
+  const describeWithAi = async () => {
+    if (!bookmark.id) return
+    setDescribeError(null)
+    setDescribing(true)
+    try {
+      const payload = await requestAi(`/bookmarks/${bookmark.id}/ai/description`)
+      if (!payload.ok || !payload.description) {
+        setDescribeError(payload.error || "Couldn't draft a description.")
+        return
+      }
+      form.setData("description", payload.description)
+    } finally {
+      setDescribing(false)
+    }
+  }
+
+  const suggestTagsWithAi = async () => {
+    if (!bookmark.id) return
+    setSuggestError(null)
+    setSuggesting(true)
+    try {
+      const payload = await requestAi(`/bookmarks/${bookmark.id}/ai/tags`)
+      if (!payload.ok || !payload.tags?.length) {
+        setSuggestError(payload.error || "Couldn't suggest tags.")
+        return
+      }
+      const selected = form.data.tag_names.map((name) => name.toLowerCase())
+      setSuggestedTags(
+        payload.tags.filter((name) => !selected.includes(name.toLowerCase())),
+      )
+    } finally {
+      setSuggesting(false)
+    }
+  }
+
+  const addSuggestedTag = (name: string) => {
+    if (form.data.tag_names.some((existing) => existing.toLowerCase() === name.toLowerCase())) {
+      setSuggestedTags((current) => current.filter((tag) => tag.toLowerCase() !== name.toLowerCase()))
+      return
+    }
+    form.setData("tag_names", [ ...form.data.tag_names, name ])
+    setSuggestedTags((current) => current.filter((tag) => tag.toLowerCase() !== name.toLowerCase()))
   }
 
   const toggleCollection = (id: number, checked: boolean) => {
@@ -234,7 +285,21 @@ export function BookmarkForm({
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="description">Description</label>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <label htmlFor="description">Description</label>
+          {mode === "edit" && (
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={describeWithAi}
+              disabled={describing}
+              data-testid="describe-with-ai"
+            >
+              {describing ? "Describing…" : "Describe with AI"}
+            </Button>
+          )}
+        </div>
         <textarea
           id="description"
           className="form-control form-control-textarea"
@@ -244,13 +309,42 @@ export function BookmarkForm({
         {errors.description && (
           <p className="text-xs text-danger-display">{errors.description}</p>
         )}
+        {describeError && <p className="text-xs text-danger-display">{describeError}</p>}
       </div>
 
-      <TagInput
-        value={form.data.tag_names}
-        suggestions={tags}
-        onChange={(names) => form.setData("tag_names", names)}
-      />
+      <div>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex-1">
+            <TagInput
+              value={form.data.tag_names}
+              suggestions={tags}
+              onChange={(names) => {
+                form.setData("tag_names", names)
+                const selected = names.map((name) => name.toLowerCase())
+                setSuggestedTags((current) =>
+                  current.filter((tag) => !selected.includes(tag.toLowerCase())),
+                )
+              }}
+            />
+          </div>
+        </div>
+        {mode === "edit" && (
+          <div className="mt-2">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={suggestTagsWithAi}
+              disabled={suggesting}
+              data-testid="suggest-tags"
+            >
+              {suggesting ? "Suggesting…" : "Suggest tags"}
+            </Button>
+          </div>
+        )}
+        {suggestError && <p className="mt-2 text-xs text-danger-display">{suggestError}</p>}
+        <SuggestedTags tags={suggestedTags} onAdd={addSuggestedTag} disabled={form.processing} />
+      </div>
 
       {collections.length > 0 && (
         <fieldset className="space-y-2">

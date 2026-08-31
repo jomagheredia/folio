@@ -40,6 +40,8 @@ Optional / situational:
 | `INERTIA_SSR` | `1` or `0` | SSR is **on by default in production** (see `config/initializers/inertia_rails.rb`). Set `0` to force-disable, e.g. for debugging. |
 | `INERTIA_SSR_URL` | `http://localhost:13714` | Only needed if you move the SSR process to a non-default port. |
 | `DATABASE_URL` | postgres URL | Hatchbox usually sets this automatically when you attach the database (step 4). Only override if you're pointing at an external database. |
+| `OPENAI_API_KEY` | OpenAI API key | Required for **Describe with AI**, **Suggest tags**, and collection **Summarize**. Without it, those actions show an error and users can still write by hand. |
+| `OPENAI_MODEL` | `gpt-4o-mini` | Optional. Override the chat model (must support vision for image descriptions). |
 
 ## 4. Create the database
 

@@ -17,12 +17,19 @@ Rails.application.routes.draw do
     collection do
       post :preview, to: "bookmarks/previews#create"
     end
+    resource :ai, only: [], module: :bookmarks, controller: :ai do
+      post :description
+      post :tags
+    end
   end
   resources :tags, only: %i[ index show update destroy ]
   resources :collections do
     member do
       post :add_bookmark
       delete :remove_bookmark
+    end
+    resource :ai, only: [], module: :collections, controller: :ai do
+      post :summary
     end
   end
   resources :shares, only: %i[ new create ]

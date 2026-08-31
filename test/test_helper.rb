@@ -9,6 +9,12 @@ module AuthenticationHelpers
   end
 end
 
+module AiTestHelpers
+  def stub_openai(payload)
+    OpenaiClient.fake_chat = ->(_messages) { payload }
+  end
+end
+
 module ActiveSupport
   class TestCase
     # Run tests in parallel with specified workers
@@ -17,7 +23,11 @@ module ActiveSupport
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
 
-    # Add more helper methods to be used by all tests here...
+    include AiTestHelpers
+
+    teardown do
+      OpenaiClient.fake_chat = nil
+    end
   end
 end
 

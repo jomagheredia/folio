@@ -69,3 +69,6 @@ gem "sitemap_generator"
 
 # Transactional email via Resend (production/staging when RESEND_API_KEY is set)
 gem "resend"
+
+# OpenAI chat + vision for bookmark descriptions, tag suggestions, and collection summaries
+gem "ruby-openai"

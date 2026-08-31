@@ -10,6 +10,7 @@ export type CollectionOption = {
   id: number
   name: string
   notes?: string | null
+  ai_summary?: string | null
   bookmarks_count?: number
 }
 

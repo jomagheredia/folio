@@ -80,6 +80,20 @@ class BookmarksControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ "brutalism" ], bookmark.tags.map(&:name)
   end
 
+  test "updating only description keeps tags and collections" do
+    bookmark = bookmarks(:one)
+    assert_includes bookmark.tags.map(&:name), "recipes"
+    assert_includes bookmark.collections, collections(:spring)
+
+    patch bookmark_path(bookmark), params: { description: "Kept by AI" }
+
+    assert_redirected_to bookmark_path(bookmark)
+    bookmark.reload
+    assert_equal "Kept by AI", bookmark.description
+    assert_includes bookmark.tags.map(&:name), "recipes"
+    assert_includes bookmark.collections, collections(:spring)
+  end
+
   test "cannot update another user's bookmark" do
     patch bookmark_path(bookmarks(:other_user)), params: { title: "Hacked" }
     assert_response :not_found
