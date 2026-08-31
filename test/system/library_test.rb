@@ -25,10 +25,12 @@ class LibrarySystemTest < ApplicationSystemTestCase
     assert_text "https://example.com/system-test"
 
     visit collections_path
-    click_on "New collection"
+    assert_text "Group finds into named sets"
+    js_click('a[href="/collections/new"]')
+    assert_text "Give the set a name", wait: 10
     fill_react_field("name", "Kitchen refs")
     js_click("form button[type='submit']")
-    assert_text "Kitchen refs"
+    assert_text "Kitchen refs", wait: 10
 
     visit bookmarks_path
     fill_in "library-search", with: "System test"
