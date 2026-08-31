@@ -37,6 +37,13 @@ class CollectionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Updated", collection.notes
   end
 
+  test "updates ai_summary" do
+    collection = collections(:spring)
+    patch collection_path(collection), params: { ai_summary: "A quiet set of launch refs." }
+    assert_redirected_to collection_path(collection)
+    assert_equal "A quiet set of launch refs.", collection.reload.ai_summary
+  end
+
   test "adds and removes a bookmark" do
     collection = collections(:spring)
     bookmark = bookmarks(:visual)

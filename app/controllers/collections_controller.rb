@@ -78,6 +78,6 @@ class CollectionsController < ApplicationController
     end
 
     def collection_params
-      params.permit(:name, :notes)
+      params.permit(:name, :notes, :ai_summary)
     end
 end

@@ -31,7 +31,7 @@ module LibrarySerialization
     end
 
     def collection_props(collection, bookmarks_count: nil)
-      props = { id: collection.id, name: collection.name, notes: collection.notes }
+      props = { id: collection.id, name: collection.name, notes: collection.notes, ai_summary: collection.ai_summary }
       props[:bookmarks_count] = bookmarks_count.to_i unless bookmarks_count.nil?
       props
     end

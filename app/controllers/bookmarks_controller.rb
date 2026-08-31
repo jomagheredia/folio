@@ -84,8 +84,8 @@ class BookmarksController < ApplicationController
     attach_image(@bookmark)
 
     if @bookmark.save
-      @bookmark.assign_tags_from_names(tag_names_param)
-      @bookmark.assign_collections_from_ids(collection_ids_param)
+      @bookmark.assign_tags_from_names(tag_names_param) if tag_names_submitted?
+      @bookmark.assign_collections_from_ids(collection_ids_param) if collection_ids_submitted?
       redirect_to @bookmark, notice: "Bookmark updated."
     else
       redirect_back fallback_location: edit_bookmark_path(@bookmark), inertia: inertia_record_errors(@bookmark)
@@ -120,6 +120,14 @@ class BookmarksController < ApplicationController
       elsif params[:preview_image_url].present? && !bookmark.image.attached?
         BookmarkImageAttacher.call(bookmark, params[:preview_image_url])
       end
+    end
+
+    def tag_names_submitted?
+      params.key?(:tag_names)
+    end
+
+    def collection_ids_submitted?
+      params.key?(:collection_ids)
     end
 
     def tag_names_param

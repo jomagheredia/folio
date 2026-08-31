@@ -10,12 +10,12 @@ class ShareSystemTest < ApplicationSystemTestCase
 
     visit collection_path(collections(:spring))
     assert_text "Spring campaign refs"
-    click_on "Share"
+    js_click("[data-testid='share-collection']")
 
-    assert_text "Share Spring campaign refs"
-    fill_in "Recipients", with: "colleague@example.com"
-    fill_in "Note", with: "For the launch review"
-    find("[data-testid='send-share']").click
+    assert_text "Share Spring campaign refs", wait: 10
+    fill_react_field("recipients", "colleague@example.com")
+    fill_react_field("note", "For the launch review")
+    js_click("[data-testid='send-share']")
 
     assert_text "Sent to colleague@example.com", wait: 10
     assert_text "colleague@example.com"
@@ -25,13 +25,13 @@ class ShareSystemTest < ApplicationSystemTestCase
     log_in_through_ui
 
     find("input[aria-label='Select Example Article']").click
-    click_on "Share selected"
+    js_click('a[href^="/shares/new"]')
 
-    assert_text "Share finds"
-    fill_in "Recipients", with: "friend@example.com"
-    fill_in "Note", with: "A few finds"
+    assert_text "Share finds", wait: 10
+    fill_react_field("recipients", "friend@example.com")
+    fill_react_field("note", "A few finds")
     assert_field "Recipients", with: "friend@example.com"
-    find("[data-testid='send-share']").click
+    js_click("[data-testid='send-share']")
 
     assert_text "Sent to friend@example.com", wait: 10
     assert_current_path bookmarks_path
