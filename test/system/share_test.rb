@@ -12,9 +12,9 @@ class ShareSystemTest < ApplicationSystemTestCase
     assert_text "Spring campaign refs"
     click_on "Share"
 
-    assert_text "Share Spring campaign refs"
-    fill_in "Recipients", with: "colleague@example.com"
-    fill_in "Note", with: "For the launch review"
+    wait_for_share_form "Share Spring campaign refs"
+    fill_in_react "Recipients", with: "colleague@example.com"
+    fill_in_react "Note", with: "For the launch review"
     find("[data-testid='send-share']").click
 
     assert_text "Sent to colleague@example.com", wait: 10
@@ -27,10 +27,9 @@ class ShareSystemTest < ApplicationSystemTestCase
     find("input[aria-label='Select Example Article']").click
     click_on "Share selected"
 
-    assert_text "Share finds"
-    fill_in "Recipients", with: "friend@example.com"
-    fill_in "Note", with: "A few finds"
-    assert_field "Recipients", with: "friend@example.com"
+    wait_for_share_form "Share finds"
+    fill_in_react "Recipients", with: "friend@example.com"
+    fill_in_react "Note", with: "A few finds"
     find("[data-testid='send-share']").click
 
     assert_text "Sent to friend@example.com", wait: 10
@@ -44,5 +43,11 @@ class ShareSystemTest < ApplicationSystemTestCase
       fill_in "Password", with: "password"
       click_on "Log in"
       assert_text "Library"
+    end
+
+    def wait_for_share_form(heading)
+      assert_text heading
+      assert_selector "#recipients"
+      assert_selector "[data-testid='send-share']:not([disabled])"
     end
 end
