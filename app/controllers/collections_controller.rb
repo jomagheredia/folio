@@ -20,7 +20,8 @@ class CollectionsController < ApplicationController
     render inertia: "collections/Show", props: {
       collection: collection_props(@collection, bookmarks_count: bookmarks.size),
       bookmarks: bookmarks.map { |bookmark| bookmark_card_props(bookmark) },
-      available_bookmarks: available.map { |bookmark| { id: bookmark.id, title: bookmark.title, kind: bookmark.kind } }
+      available_bookmarks: available.map { |bookmark| { id: bookmark.id, title: bookmark.title, kind: bookmark.kind } },
+      shares: @collection.shares.newest_first.map { |share| share_history_props(share) }
     }
   end
 

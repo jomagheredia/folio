@@ -6,9 +6,11 @@ class CollectionsControllerTest < ActionDispatch::IntegrationTest
     log_in_as(@user)
   end
 
-  test "index is successful" do
-    get collections_path
+  test "show includes past share history" do
+    get collection_path(collections(:spring))
     assert_response :success
+    assert_includes response.body, "friend@example.com"
+    assert_includes response.body, "Spring campaign refs"
   end
 
   test "creates a collection" do

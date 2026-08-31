@@ -2,17 +2,31 @@ import { Link } from "@inertiajs/react"
 import { Image as ImageIcon, Link as LinkIcon } from "lucide-react"
 import type { ReactNode } from "react"
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 import type { BookmarkCardData } from "@/types/folio"
 
 export function BookmarkCard({
   bookmark,
   footer,
+  selected = false,
+  onToggleSelect,
 }: {
   bookmark: BookmarkCardData
   footer?: ReactNode
+  selected?: boolean
+  onToggleSelect?: (bookmark: BookmarkCardData) => void
 }) {
   return (
-    <article className="overflow-hidden rounded-md border border-hairline bg-page">
+    <article className="relative overflow-hidden rounded-md border border-hairline bg-page">
+      {onToggleSelect && (
+        <div className="absolute left-2 top-2 z-10">
+          <Checkbox
+            checked={selected}
+            aria-label={`Select ${bookmark.title}`}
+            onChange={() => onToggleSelect(bookmark)}
+          />
+        </div>
+      )}
       <Link href={`/bookmarks/${bookmark.id}`} className="block no-underline">
         <div className="relative aspect-[16/10] bg-surface">
           {bookmark.image_url ? (

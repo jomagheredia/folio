@@ -1,0 +1,12 @@
+spring_sent:
+  user: one
+  collection: spring
+  recipients:
+    - friend@example.com
+  note: Thought you'd like these.
+  subject: Spring campaign refs
+  body: |-
+    Example Article
+    https://example.com/article
+    A short snippet about design systems
+  sent_at: <%= 1.day.ago %>

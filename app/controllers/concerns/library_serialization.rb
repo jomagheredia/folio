@@ -36,6 +36,16 @@ module LibrarySerialization
       props
     end
 
+    def share_history_props(share)
+      {
+        id: share.id,
+        recipients: share.recipients,
+        subject: share.subject,
+        sent_at: share.sent_at&.iso8601,
+        sent_at_label: share.sent_at&.to_fs(:long)
+      }
+    end
+
     def tag_options
       Current.user.tags.order(:name).map { |tag| { id: tag.id, name: tag.name } }
     end

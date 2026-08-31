@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_31_020714) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_31_030500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -94,6 +94,32 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_31_020714) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_sessions_on_user_id"
+  end
+
+  create_table "share_bookmarks", force: :cascade do |t|
+    t.bigint "share_id", null: false
+    t.bigint "bookmark_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["bookmark_id"], name: "index_share_bookmarks_on_bookmark_id"
+    t.index ["share_id", "bookmark_id"], name: "index_share_bookmarks_on_share_id_and_bookmark_id", unique: true
+    t.index ["share_id"], name: "index_share_bookmarks_on_share_id"
+  end
+
+  create_table "shares", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "collection_id"
+    t.text "recipients", default: [], null: false, array: true
+    t.text "note"
+    t.string "subject", null: false
+    t.text "body", null: false
+    t.datetime "sent_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["collection_id", "sent_at"], name: "index_shares_on_collection_id_and_sent_at"
+    t.index ["collection_id"], name: "index_shares_on_collection_id"
+    t.index ["user_id", "sent_at"], name: "index_shares_on_user_id_and_sent_at"
+    t.index ["user_id"], name: "index_shares_on_user_id"
   end
 
   create_table "solid_cable_messages", force: :cascade do |t|
@@ -266,6 +292,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_31_020714) do
   add_foreign_key "collection_bookmarks", "collections"
   add_foreign_key "collections", "users"
   add_foreign_key "sessions", "users"
+  add_foreign_key "share_bookmarks", "bookmarks"
+  add_foreign_key "share_bookmarks", "shares"
+  add_foreign_key "shares", "collections"
+  add_foreign_key "shares", "users"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_failed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

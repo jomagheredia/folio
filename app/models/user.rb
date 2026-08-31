@@ -6,6 +6,7 @@ class User < ApplicationRecord
   has_many :bookmarks, dependent: :destroy
   has_many :tags, dependent: :destroy
   has_many :collections, dependent: :destroy
+  has_many :shares, dependent: :destroy
 
   normalizes :email, with: ->(e) { e.strip.downcase }
 

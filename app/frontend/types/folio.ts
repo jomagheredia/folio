@@ -35,3 +35,17 @@ export type LibraryFilters = {
   collection_id: number | null
   collection_name: string | null
 }
+
+export type ShareHistoryItem = {
+  id: number
+  recipients: string[]
+  subject: string
+  sent_at: string
+  sent_at_label: string
+}
+
+export type ShareCollection = {
+  id: number
+  name: string
+  ai_summary?: string | null
+}

@@ -10,6 +10,8 @@ class Bookmark < ApplicationRecord
   has_many :tags, through: :bookmark_tags
   has_many :collection_bookmarks, dependent: :destroy
   has_many :collections, through: :collection_bookmarks
+  has_many :share_bookmarks, dependent: :destroy
+  has_many :shares, through: :share_bookmarks
 
   enum :kind, { link: 0, visual: 1 }
 

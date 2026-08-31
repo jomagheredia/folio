@@ -66,3 +66,6 @@ gem "vite_rails", "~> 3.0"
 # every public page. See config/sitemap.rb. Refresh with:
 #   bin/rails sitemap:refresh:no_ping  (writes to public/sitemap.xml)
 gem "sitemap_generator"
+
+# Transactional email via Resend (production/staging when RESEND_API_KEY is set)
+gem "resend"
