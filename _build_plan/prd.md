@@ -8,7 +8,7 @@ Folio is a personal library for links and visual references you want to keep. Yo
 
 This is a bookmarking app and an inspiration repository in one: URL bookmarks sit beside image references. The library is yours. Sharing is intentional (email), not a social network. AI is an assistant on save and on collections, not a chat product.
 
-The app is built on the **Build New** starter (Rails 8, Inertia.js, React 19, PostgreSQL). Work is split into three milestones: a usable personal library, then email sharing, then AI assist.
+The app is built on the **Build New** starter (Rails 8, Inertia.js, React 19, PostgreSQL). Work is split into three original milestones: a usable personal library, then email sharing, then AI assist. Two later milestones add automatic OpenAI summaries and emailing an individual bookmark.
 
 ---
 
@@ -23,6 +23,8 @@ The app is built on the **Build New** starter (Rails 8, Inertia.js, React 19, Po
 - Email a collection or a selection of bookmarks to friends or colleagues (no Folio account required to receive).
 - See a simple history of who you emailed a collection to and when.
 - Ask AI to draft a description and suggest tags on a bookmark, and to summarize a collection for you (and for the share email).
+- Get an OpenAI-written summary automatically when you save a find or open a collection that does not have one yet (you can edit or discard it).
+- Email a single bookmark from that bookmark’s page.
 
 ---
 
@@ -44,8 +46,8 @@ Do not re-spec or rebuild these:
 
 These are the only outside vendors for v1. Credentials are obtained by the builder; storage of secrets is an implementation decision.
 
-- **OpenAI** — drafts bookmark descriptions, suggests tags, and summarizes collections. Requires an OpenAI API key. Used in milestone 3.
-- **Resend** — delivers share emails. Requires a Resend API key, and a verified sending domain when live. Used in milestone 2.
+- **OpenAI** — drafts bookmark descriptions, suggests tags, and summarizes collections. Requires an OpenAI API key. Used in milestone 3, and again in milestone 4 for automatic summaries.
+- **Resend** — delivers share emails. Requires a Resend API key, and a verified sending domain when live. Used in milestone 2, and again in milestone 5 for emailing a single bookmark.
 - **Cloudflare R2** — stores uploaded images and preview files. Requires a Cloudflare account, R2 bucket, and access keys. Local development may keep files on disk; R2 is what production uses. Needed from milestone 1 (visuals and link previews).
 
 Search stays inside the app. Saving is paste-a-URL (and image upload) on the website; a browser add-on is a later release.
@@ -95,6 +97,7 @@ One saved find — a **link** or a **visual**.
 - URL — the page, if it’s a link (and the image URL when you saved from a link)
 - Image — the picture (upload, or a preview of the page)
 - Description — notes you write and/or AI drafts
+- Summary — a short auto-generated overview (optional, filled in milestone 4; you can edit it)
 - Belongs to you
 - Can have many tags
 - Can sit in many collections
@@ -257,3 +260,62 @@ Saving and organizing get an assistant. Share emails can include a collection su
 ### Done when
 
 A signed-in user can generate and edit an AI description and suggested tags on a bookmark, generate and edit a collection summary, and include that summary when emailing the collection. Hand-filing still works if AI is unavailable.
+
+---
+
+## Milestone 4 — Automatic AI summaries
+
+Folio uses the OpenAI API to write a first-draft summary for you, so you do not have to start from a blank field. You can still edit or throw the draft away.
+
+This milestone is about **automatic summaries**. On-demand “Describe with AI” and “Suggest tags” stay in milestone 3.
+
+### What gets built
+
+- After you save a bookmark, Folio asks OpenAI for a short summary of the find. For a link it uses the title, snippet, and preview; for a visual it uses the picture. The draft shows up as a summary you can keep, edit, or discard.
+- On a collection that does not have a summary yet, Folio can generate one from the items in the set without you having to click Summarize first. You can still edit it before it sticks.
+- Automatic drafts never overwrite words you already wrote. If a description or collection summary already has your text, Folio leaves it alone.
+- If OpenAI is missing, busy, or fails, saving and organizing still work. Summaries stay empty until you write them yourself.
+
+### What milestone 4 explicitly does NOT include
+
+- Chat (“what did I save about kitchens?”)
+- Auto-adding items to collections
+- “Find similar on the web”
+- Suggesting tags (milestone 3)
+- Picking a different AI model or bring-your-own key
+- Several alternative summaries to pick from
+- Translating summaries
+- Chrome add-on or any browser extension
+
+### Done when
+
+A signed-in user can save a bookmark and see an OpenAI-written summary they can edit, and can open a collection that has no summary and get one generated without clicking Summarize. Hand-written notes still work if AI is unavailable.
+
+---
+
+## Milestone 5 — Share a bookmark by email
+
+You can email one bookmark from that bookmark’s page. Recipients do not need a Folio account.
+
+Milestone 2 already covers emailing a collection or a multi-select from the library. This milestone adds sharing **a single bookmark** in place.
+
+### What gets built
+
+- On a bookmark, Share opens a short form: one or more recipient emails, optional note from you, subject you can edit.
+- Body is pre-filled with the title, the link or image, and the description or summary when we have one. You can edit before send.
+- One click sends. Recipients get a readable email — no Folio account required.
+- Each recipient gets their own copy of the email, so they do not see each other’s addresses.
+
+### What milestone 5 explicitly does NOT include
+
+- Open or click tracking
+- Scheduled send
+- Share via Slack, iMessage, or a public link
+- Attaching original image files as email attachments (images appear inline or as links)
+- Recipients commenting back inside Folio
+- A new send-history page for ad-hoc bookmark shares (collection history stays as milestone 2 specified it)
+- Browser add-ons
+
+### Done when
+
+A signed-in user can email one bookmark from that bookmark’s page to one or more addresses, the message arrives as a readable email, and the recipient does not need to sign up.
