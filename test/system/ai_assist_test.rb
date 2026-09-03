@@ -52,6 +52,7 @@ class AiAssistSystemTest < ApplicationSystemTestCase
     stub_openai({ "summary" => "A short overview of the find." })
 
     click_on "Save a link"
+    assert_text "Folio fills in a title", wait: 10
     fill_react_field("url", "https://example.com/auto-summary")
     fill_react_field("title", "Auto summary find")
     js_click("[data-testid='save-bookmark']")
