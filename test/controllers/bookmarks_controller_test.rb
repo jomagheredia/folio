@@ -35,7 +35,7 @@ class BookmarksControllerTest < ActionDispatch::IntegrationTest
     end
 
     bookmark = @user.bookmarks.newest_first.first
-    assert_redirected_to bookmark_path(bookmark)
+    assert_redirected_to bookmark_path(bookmark, auto_summary: 1)
     assert_equal "New find", bookmark.title
     assert_equal %w[fresh recipes].sort, bookmark.tags.map(&:name).sort
   end
@@ -52,7 +52,7 @@ class BookmarksControllerTest < ActionDispatch::IntegrationTest
     end
 
     bookmark = @user.bookmarks.visual.newest_first.first
-    assert_redirected_to bookmark_path(bookmark)
+    assert_redirected_to bookmark_path(bookmark, auto_summary: 1)
     assert bookmark.image.attached?
   end
 
@@ -90,6 +90,20 @@ class BookmarksControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to bookmark_path(bookmark)
     bookmark.reload
     assert_equal "Kept by AI", bookmark.description
+    assert_includes bookmark.tags.map(&:name), "recipes"
+    assert_includes bookmark.collections, collections(:spring)
+  end
+
+  test "updating only summary keeps tags and collections" do
+    bookmark = bookmarks(:one)
+    assert_includes bookmark.tags.map(&:name), "recipes"
+    assert_includes bookmark.collections, collections(:spring)
+
+    patch bookmark_path(bookmark), params: { summary: "A short overview." }
+
+    assert_redirected_to bookmark_path(bookmark)
+    bookmark.reload
+    assert_equal "A short overview.", bookmark.summary
     assert_includes bookmark.tags.map(&:name), "recipes"
     assert_includes bookmark.collections, collections(:spring)
   end

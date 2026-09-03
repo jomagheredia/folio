@@ -20,6 +20,7 @@ export type BookmarkCardData = {
   title: string
   url: string | null
   description: string | null
+  summary: string | null
   image_url: string | null
   tags: TagOption[]
   collections: { id: number; name: string }[]

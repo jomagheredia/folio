@@ -18,6 +18,7 @@ export type BookmarkFormValues = {
   title: string
   url: string | null
   description: string | null
+  summary?: string | null
   image_url: string | null
   tag_names: string[]
   collection_ids: number[]
@@ -53,6 +54,7 @@ export function BookmarkForm({
     title: bookmark.title,
     url: bookmark.url ?? "",
     description: bookmark.description ?? "",
+    summary: bookmark.summary ?? "",
     image: null as File | null,
     preview_image_url: "",
     tag_names: bookmark.tag_names ?? [],
@@ -311,6 +313,19 @@ export function BookmarkForm({
         )}
         {describeError && <p className="text-xs text-danger-display">{describeError}</p>}
       </div>
+
+      {mode === "edit" && (
+        <div className="space-y-2">
+          <label htmlFor="summary">Summary</label>
+          <textarea
+            id="summary"
+            className="form-control form-control-textarea"
+            value={form.data.summary}
+            onChange={(event) => form.setData("summary", event.target.value)}
+          />
+          {errors.summary && <p className="text-xs text-danger-display">{errors.summary}</p>}
+        </div>
+      )}
 
       <div>
         <div className="flex flex-wrap items-center justify-between gap-2">
