@@ -21,7 +21,9 @@ export function defaultShareBody(
   bookmarks.forEach((bookmark) => {
     const lines = [bookmark.title, bookmark.url || "(visual)"]
     const description = bookmark.description?.trim()
+    const summary = bookmark.summary?.trim()
     if (description) lines.push(description)
+    if (summary && summary !== description) lines.push(summary)
     parts.push(lines.join("\n"))
   })
 

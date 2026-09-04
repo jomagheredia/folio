@@ -18,7 +18,20 @@ class ShareMailerTest < ActionMailer::TestCase
     assert_includes html, "https://example.com/article"
     assert_includes text, "Example Article"
     assert_includes text, "Thought you'd like these."
+    assert_includes html, "shared a find"
+    assert_includes text, "shared a find"
     refute_includes html, "Sign up"
+  end
+
+  test "uses plural intro when the share has more than one bookmark" do
+    share = shares(:spring_sent)
+    share.bookmarks << bookmarks(:visual)
+    html = ShareMailer.share_email(share, "friend@example.com").html_part.body.to_s
+    text = ShareMailer.share_email(share, "friend@example.com").text_part.body.to_s
+
+    assert_includes html, "shared finds"
+    assert_includes text, "shared finds"
+    refute_includes html, "shared a find"
   end
 
   test "includes a thumbnail url when the bookmark has an image" do

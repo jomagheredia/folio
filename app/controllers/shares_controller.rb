@@ -50,11 +50,12 @@ class SharesController < ApplicationController
       {
         collection: collection && { id: collection.id, name: collection.name, ai_summary: collection.ai_summary },
         bookmarks: bookmarks.map { |bookmark| bookmark_card_props(bookmark) },
+        bookmark_id: source_bookmark_id,
         defaults: {
           subject: Share.default_subject(bookmarks, collection: collection),
           body: Share.default_body(bookmarks, collection: collection)
         },
-        cancel_path: collection ? collection_path(collection) : bookmarks_path
+        cancel_path: cancel_path_for(collection, bookmarks)
       }
     end
 
@@ -65,10 +66,27 @@ class SharesController < ApplicationController
     def bookmark_ids_param
       ids = params[:bookmark_ids]
       ids = ids.split(",") if ids.is_a?(String)
-      Array(ids).map(&:to_i).reject(&:zero?).uniq
+      ids = Array(ids).map(&:to_i).reject(&:zero?)
+      ids << source_bookmark_id if source_bookmark_id && ids.empty?
+      ids.uniq
+    end
+
+    def source_bookmark_id
+      id = params[:bookmark_id].to_i
+      id.positive? ? id : nil
+    end
+
+    def cancel_path_for(collection, bookmarks)
+      return collection_path(collection) if collection
+      return bookmark_path(bookmarks.first) if source_bookmark_id && bookmarks.size == 1
+
+      bookmarks_path
     end
 
     def after_share_path(share)
-      share.collection || bookmarks_path
+      return share.collection if share.collection
+      return bookmark_path(source_bookmark_id) if source_bookmark_id && share.bookmark_ids.include?(source_bookmark_id)
+
+      bookmarks_path
     end
 end
