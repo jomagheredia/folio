@@ -171,6 +171,11 @@ export default function BookmarksShow({ bookmark }: { bookmark: BookmarkCardData
           description={bookmark.kind === "visual" ? "Visual reference" : "Saved link"}
           actions={
             <>
+              <Button asChild>
+                <Link href={`/shares/new?bookmark_id=${bookmark.id}`} data-testid="share-bookmark">
+                  Share
+                </Link>
+              </Button>
               <Button asChild variant="secondary">
                 <Link href={`/bookmarks/${bookmark.id}/edit`} data-testid="edit-bookmark">
                   Edit
