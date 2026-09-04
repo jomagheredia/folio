@@ -11,6 +11,7 @@ module LibrarySerialization
         title: bookmark.title,
         url: bookmark.url,
         description: bookmark.description,
+        summary: bookmark.summary,
         image_url: bookmark_image_url(bookmark),
         tags: bookmark.tags.sort_by { |tag| tag.name.downcase }.map { |tag| tag_props(tag) },
         collections: bookmark.collections.sort_by { |collection| collection.name.downcase }.map { |collection| { id: collection.id, name: collection.name } },

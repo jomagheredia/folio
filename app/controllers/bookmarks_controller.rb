@@ -50,6 +50,7 @@ class BookmarksController < ApplicationController
         title: "",
         url: params[:url].to_s,
         description: "",
+        summary: nil,
         image_url: nil,
         tag_names: [],
         collection_ids: Array(params[:collection_id]).map(&:to_i).reject(&:zero?)
@@ -64,7 +65,7 @@ class BookmarksController < ApplicationController
     if bookmark.save
       bookmark.assign_tags_from_names(tag_names_param)
       bookmark.assign_collections_from_ids(collection_ids_param)
-      redirect_to bookmark, notice: "Saved to your library."
+      redirect_to bookmark_path(bookmark, auto_summary: 1), notice: "Saved to your library."
     else
       redirect_back fallback_location: new_bookmark_path, inertia: inertia_record_errors(bookmark)
     end
@@ -103,7 +104,7 @@ class BookmarksController < ApplicationController
     end
 
     def bookmark_params
-      params.permit(:kind, :title, :url, :description)
+      params.permit(:kind, :title, :url, :description, :summary)
     end
 
     def new_edit_props(bookmark:)

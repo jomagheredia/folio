@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Head, Link, router } from "@inertiajs/react"
 import { AppShell } from "@/components/AppShell"
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog"
@@ -20,6 +20,12 @@ export default function BookmarksShow({ bookmark }: { bookmark: BookmarkCardData
   const [suggestError, setSuggestError] = useState<string | null>(null)
   const [suggestedTags, setSuggestedTags] = useState<string[]>([])
   const [addingTag, setAddingTag] = useState(false)
+
+  const [summarizing, setSummarizing] = useState(false)
+  const [summaryError, setSummaryError] = useState<string | null>(null)
+  const [draftSummary, setDraftSummary] = useState<string | null>(null)
+  const [keepingSummary, setKeepingSummary] = useState(false)
+  const autoSummaryRequested = useRef(false)
 
   const tagNames = bookmark.tags.map((tag) => tag.name)
 
@@ -58,6 +64,58 @@ export default function BookmarksShow({ bookmark }: { bookmark: BookmarkCardData
     setDraftDescription(null)
     setDescribeError(null)
   }
+
+  const summarizeWithAi = async () => {
+    setSummaryError(null)
+    setSummarizing(true)
+    try {
+      const payload = await requestAi(`/bookmarks/${bookmark.id}/ai/summary`)
+      if (!payload.ok || !payload.summary) {
+        setSummaryError(payload.error || "Couldn't draft a summary.")
+        return
+      }
+      setDraftSummary(payload.summary)
+    } finally {
+      setSummarizing(false)
+    }
+  }
+
+  const keepSummary = () => {
+    if (draftSummary == null) return
+    setKeepingSummary(true)
+    router.patch(
+      `/bookmarks/${bookmark.id}`,
+      { summary: draftSummary },
+      {
+        preserveScroll: true,
+        onFinish: () => {
+          setKeepingSummary(false)
+          setDraftSummary(null)
+        },
+      },
+    )
+  }
+
+  const discardSummary = () => {
+    setDraftSummary(null)
+    setSummaryError(null)
+  }
+
+  useEffect(() => {
+    if (autoSummaryRequested.current) return
+    if (typeof window === "undefined") return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get("auto_summary") !== "1") return
+    if (bookmark.summary?.trim()) return
+
+    autoSummaryRequested.current = true
+    params.delete("auto_summary")
+    const query = params.toString()
+    const next = `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`
+    window.history.replaceState(window.history.state, "", next)
+
+    void summarizeWithAi()
+  }, [bookmark.id, bookmark.summary])
 
   const suggestTagsWithAi = async () => {
     setSuggestError(null)
@@ -191,6 +249,53 @@ export default function BookmarksShow({ bookmark }: { bookmark: BookmarkCardData
               <p className="mt-2">No description yet. Draft one with AI, or add it on the edit page.</p>
             )}
             {describeError && <p className="mt-2 text-xs text-danger-display">{describeError}</p>}
+          </div>
+
+          <div>
+            <h2>Summary</h2>
+            <div className="mt-2">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={summarizeWithAi}
+                disabled={summarizing}
+                data-testid="summarize-bookmark"
+              >
+                {summarizing ? "Summarizing…" : "Summarize"}
+              </Button>
+            </div>
+            {draftSummary != null ? (
+              <div className="mt-2 space-y-3">
+                <textarea
+                  id="ai-bookmark-summary-draft"
+                  className="form-control form-control-textarea"
+                  value={draftSummary}
+                  onChange={(event) => setDraftSummary(event.target.value)}
+                />
+                <div className="flex items-center gap-3">
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={keepSummary}
+                    disabled={keepingSummary}
+                    data-testid="keep-bookmark-summary"
+                  >
+                    Keep summary
+                  </Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={discardSummary}>
+                    Discard
+                  </Button>
+                </div>
+              </div>
+            ) : bookmark.summary ? (
+              <p className="mt-2" data-testid="bookmark-summary">
+                {bookmark.summary}
+              </p>
+            ) : (
+              <p className="mt-2">No summary yet. Generate one with AI, or add it on the edit page.</p>
+            )}
+            {summaryError && <p className="mt-2 text-xs text-danger-display">{summaryError}</p>}
           </div>
 
           <div>

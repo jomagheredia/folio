@@ -20,6 +20,7 @@ Rails.application.routes.draw do
     resource :ai, only: [], module: :bookmarks, controller: :ai do
       post :description
       post :tags
+      post :summary
     end
   end
   resources :tags, only: %i[ index show update destroy ]

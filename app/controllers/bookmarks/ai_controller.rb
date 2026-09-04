@@ -13,6 +13,11 @@ class Bookmarks::AiController < ApplicationController
     render json: { ok: result.ok, error: result.error, tags: result.tags }
   end
 
+  def summary
+    result = BookmarkAi.summarize(@bookmark)
+    render json: { ok: result.ok, error: result.error, summary: result.summary }
+  end
+
   private
     def set_bookmark
       @bookmark = Current.user.bookmarks.includes(:tags, :user, image_attachment: :blob).find(params[:bookmark_id])

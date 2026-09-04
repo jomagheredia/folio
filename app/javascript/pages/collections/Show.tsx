@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react"
+import { FormEvent, useEffect, useRef, useState } from "react"
 import { Head, Link, router, useForm } from "@inertiajs/react"
 import { AppShell } from "@/components/AppShell"
 import { BookmarkGrid } from "@/components/BookmarkGrid"
@@ -35,6 +35,7 @@ export default function CollectionsShow({
   const [summaryError, setSummaryError] = useState<string | null>(null)
   const [draftSummary, setDraftSummary] = useState<string | null>(null)
   const [keepingSummary, setKeepingSummary] = useState(false)
+  const autoSummaryRequested = useRef(false)
 
   const addBookmark = (event: FormEvent) => {
     event.preventDefault()
@@ -81,6 +82,15 @@ export default function CollectionsShow({
     setDraftSummary(null)
     setSummaryError(null)
   }
+
+  useEffect(() => {
+    if (autoSummaryRequested.current) return
+    if (collection.ai_summary?.trim()) return
+    if (bookmarks.length === 0) return
+
+    autoSummaryRequested.current = true
+    void summarizeWithAi()
+  }, [collection.id, collection.ai_summary, bookmarks.length])
 
   return (
     <>

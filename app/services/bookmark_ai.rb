@@ -3,7 +3,7 @@
 require "base64"
 
 class BookmarkAi
-  Result = Struct.new(:ok, :error, :description, :tags, keyword_init: true)
+  Result = Struct.new(:ok, :error, :description, :tags, :summary, keyword_init: true)
   TAG_LIMIT = 8
   EXISTING_TAG_LIMIT = 50
 
@@ -13,6 +13,10 @@ class BookmarkAi
 
   def self.suggest_tags(bookmark)
     new(bookmark).suggest_tags
+  end
+
+  def self.summarize(bookmark)
+    new(bookmark).summarize
   end
 
   def initialize(bookmark)
@@ -42,9 +46,19 @@ class BookmarkAi
     failure(e.message)
   end
 
+  def summarize
+    payload = OpenaiClient.chat(messages: summarize_messages)
+    text = payload["summary"].to_s.strip
+    return failure("AI didn't return a summary.") if text.blank?
+
+    Result.new(ok: true, error: nil, summary: text)
+  rescue OpenaiClient::Error => e
+    failure(e.message)
+  end
+
   private
     def failure(message)
-      Result.new(ok: false, error: message, description: nil, tags: nil)
+      Result.new(ok: false, error: message, description: nil, tags: nil, summary: nil)
     end
 
     def describe_messages
@@ -58,6 +72,13 @@ class BookmarkAi
       [
         { role: "system", content: tag_system_prompt },
         user_message(tag_prompt)
+      ]
+    end
+
+    def summarize_messages
+      [
+        { role: "system", content: summarize_system_prompt },
+        user_message(summarize_prompt)
       ]
     end
 
@@ -89,6 +110,12 @@ class BookmarkAi
         "Tags should be lowercase, 1–3 words, with no hashtags."
     end
 
+    def summarize_system_prompt
+      "You write a short overview of a saved bookmark in a personal library. " \
+        "Return JSON: {\"summary\": \"...\"}. Write 1–2 plain sentences. " \
+        "No hashtags. Do not invent facts that are not implied by the title, snippet, URL, or image."
+    end
+
     def describe_prompt
       if @bookmark.visual?
         <<~TEXT
@@ -116,6 +143,22 @@ class BookmarkAi
         Existing tags in this library: #{existing.join(", ").presence || "(none yet)"}
         Tags already on this bookmark: #{current.join(", ").presence || "(none)"}
       TEXT
+    end
+
+    def summarize_prompt
+      if @bookmark.visual?
+        <<~TEXT
+          Write a short summary of this visual reference.
+
+          #{bookmark_context}
+        TEXT
+      else
+        <<~TEXT
+          Write a short summary of this saved link.
+
+          #{bookmark_context}
+        TEXT
+      end
     end
 
     def bookmark_context

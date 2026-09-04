@@ -47,4 +47,29 @@ class Bookmarks::AiControllerTest < ActionDispatch::IntegrationTest
     post description_bookmark_ai_path(bookmarks(:other_user)), as: :json
     assert_response :not_found
   end
+
+  test "summary returns a json draft" do
+    stub_openai({ "summary" => "A short overview of the article." })
+
+    post summary_bookmark_ai_path(@bookmark), as: :json
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert body["ok"]
+    assert_equal "A short overview of the article.", body["summary"]
+  end
+
+  test "summary failure payload does not 500" do
+    OpenaiClient.fake_chat = ->(_messages) { raise OpenaiClient::Error, "AI isn't available right now." }
+
+    post summary_bookmark_ai_path(@bookmark), as: :json
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert_not body["ok"]
+    assert_equal "AI isn't available right now.", body["error"]
+  end
+
+  test "cannot summarize another user's bookmark" do
+    post summary_bookmark_ai_path(bookmarks(:other_user)), as: :json
+    assert_response :not_found
+  end
 end
