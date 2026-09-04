@@ -6,6 +6,22 @@ import { fileURLToPath } from 'node:url'
 
 const railsPort = 3000
 
+// vite-plugin-ruby sets server.host to "localhost", which binds loopback only
+// and hides the Vite client from Cloud Agent port forwarding. This hook runs
+// after that plugin and listens on all interfaces while keeping generated
+// asset URLs on localhost (so the browser still hits the forwarded port).
+const listenOnAllInterfaces = (): Plugin => ({
+  name: 'listen-on-all-interfaces',
+  config() {
+    return {
+      server: {
+        host: '0.0.0.0',
+        allowedHosts: true,
+      },
+    }
+  },
+})
+
 const redirectToRails = (): Plugin => ({
   name: 'redirect-bare-visits-to-rails',
   configureServer(server) {
@@ -28,6 +44,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
     RubyPlugin(),
+    listenOnAllInterfaces(),
     redirectToRails(),
   ],
   resolve: {
