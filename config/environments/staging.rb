@@ -24,6 +24,9 @@ Rails.application.configure do
   # Store uploaded files on Cloudflare R2 when credentials are present, else disk.
   config.active_storage.service = ENV["R2_ACCESS_KEY_ID"].present? && ENV["R2_SECRET_ACCESS_KEY"].present? && ENV["R2_BUCKET"].present? && ENV["R2_ENDPOINT"].present? ? :r2 : :local
 
+  # Folio serves original blobs only (no .variant / representation transforms).
+  config.active_storage.variant_processor = :disabled
+
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
   config.assume_ssl = true
 
