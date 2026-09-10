@@ -56,6 +56,8 @@ group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"
+  # Object#stub lives here in Minitest 6 (extracted from minitest/mock)
+  gem "minitest-mock"
 end
 
 gem "inertia_rails", "~> 3.11"
