@@ -23,6 +23,10 @@ class DevServerConfigTest < ActiveSupport::TestCase
     keep_alive = Rails.root.join("bin/keep-alive")
 
     assert keep_alive.executable?, "#{keep_alive} should be executable"
-    assert_includes keep_alive.read, "restarting in 1s"
+    source = keep_alive.read
+    assert_includes source, "restarting in 1s"
+    assert_includes source, "setsid"
+    assert_includes source, "stopping=0"
+    refute_includes source, 'code -eq 143'
   end
 end

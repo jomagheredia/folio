@@ -1,14 +1,27 @@
 #!/usr/bin/env bash
 # Restart a Procfile command if it crashes, so Foreman/Hivemind do not
-# tear down Rails + Vite + jobs together. Clean signals (INT/TERM, or a
-# 0 exit) stop the loop so `bin/dev` can still shut down.
+# tear down Rails + Vite + jobs together. SIGINT/SIGTERM on this wrapper
+# stop the loop so `bin/dev` can still shut down. A SIGTERM on the child
+# alone (killed Vite, OOM, etc.) is treated as a crash and restarted.
 set -u
 
-term() {
-  if [[ -n "${child:-}" ]]; then
-    kill -TERM "$child" 2>/dev/null || true
-    wait "$child" 2>/dev/null || true
+stopping=0
+child=""
+
+stop_child() {
+  if [[ -z "$child" ]]; then
+    return
   fi
+  # Child runs in its own process group (setsid) so we can reap npm/node
+  # grandchildren without signaling Foreman's group.
+  kill -TERM -"$child" 2>/dev/null || kill -TERM "$child" 2>/dev/null || true
+  wait "$child" 2>/dev/null || true
+  kill -KILL -"$child" 2>/dev/null || true
+}
+
+term() {
+  stopping=1
+  stop_child
   exit 0
 }
 
@@ -20,13 +33,25 @@ if [[ $# -eq 0 ]]; then
 fi
 
 while true; do
-  "$@" &
+  setsid "$@" &
   child=$!
   wait "$child"
   code=$?
+  leftover=$child
+  child=""
+  # Reap any leftover descendants holding the port (e.g. node after npm dies).
+  kill -TERM -"$leftover" 2>/dev/null || true
+  kill -KILL -"$leftover" 2>/dev/null || true
 
-  if [[ $code -eq 0 || $code -eq 130 || $code -eq 143 ]]; then
-    exit "$code"
+  if [[ $stopping -eq 1 ]]; then
+    exit 0
+  fi
+
+  # 0 = the command finished on its own. Exit so Foreman can stop the group
+  # (e.g. a one-shot process). Any other status, including 143 from a killed
+  # child, is a crash — restart instead of taking Rails down with it.
+  if [[ $code -eq 0 ]]; then
+    exit 0
   fi
 
   echo "$(date -Iseconds) $1 exited with $code; restarting in 1s" >&2
