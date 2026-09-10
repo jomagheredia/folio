@@ -1,5 +1,5 @@
-web: bin/rails s
-vite: bin/vite dev
-jobs: bin/jobs
-ssr_build: bin/vite build --ssr --watch
-ssr: bin/vite ssr
+web: bin/keep-alive bin/rails s -b 0.0.0.0
+vite: bin/keep-alive bin/vite dev
+jobs: bin/keep-alive bin/jobs
+ssr_build: bin/keep-alive bin/vite build --ssr --watch
+ssr: bin/keep-alive bin/vite ssr

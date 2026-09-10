@@ -3,8 +3,14 @@ import tailwindcss from '@tailwindcss/vite'
 import { defineConfig, type Plugin } from 'vite'
 import RubyPlugin from 'vite-plugin-ruby'
 import { fileURLToPath } from 'node:url'
+import dns from 'node:dns'
 
-const railsPort = 3000
+// Node 17+ resolves `localhost` to IPv6 (`::1`) first. Vite then binds only
+// that family, Rails `Socket.tcp("localhost")` can miss it on IPv4, and
+// `autoBuild` kicks off a competing production build that looks like a crash.
+dns.setDefaultResultOrder('ipv4first')
+
+const railsPort = Number(process.env.PORT) || 3000
 
 const redirectToRails = (): Plugin => ({
   name: 'redirect-bare-visits-to-rails',
@@ -14,7 +20,7 @@ const redirectToRails = (): Plugin => ({
       const isBare = url === '/' || url === '/vite-dev/' || url === '/vite-dev'
       const isHtml = req.headers.accept?.includes('text/html')
       if (isBare && isHtml) {
-        res.writeHead(302, { Location: `http://localhost:${railsPort}` })
+        res.writeHead(302, { Location: `http://127.0.0.1:${railsPort}` })
         res.end()
         return
       }
@@ -23,11 +29,29 @@ const redirectToRails = (): Plugin => ({
   },
 })
 
+const listenOnAllIpv4 = (): Plugin => ({
+  name: 'listen-on-all-ipv4',
+  apply: 'serve',
+  config() {
+    return {
+      server: {
+        // vite-plugin-ruby copies config/vite.json `host` onto server.host.
+        // 127.0.0.1 is correct for the Rails health check, but loopback-only
+        // sockets are invisible to port forwarding. Listen on all IPv4
+        // addresses; Rails still connects via 127.0.0.1.
+        host: true,
+        strictPort: true,
+      },
+    }
+  },
+})
+
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
     RubyPlugin(),
+    listenOnAllIpv4(),
     redirectToRails(),
   ],
   resolve: {
