@@ -12,9 +12,11 @@ npm install    # installs JS dependencies
 bin/dev        # starts Rails (:3000) + Vite (:3036)
 ```
 
-Requires Ruby 3.3.6, Node 20.19+ (or 22.12+), and PostgreSQL 10+.
+Requires Ruby 3.3.6, Node 22.12+, and PostgreSQL 10+.
 
-See the [docs](https://buildermethods.com/rails-react-template) for everything else — what's inside, how to add pages, the design system, SSR, deployment, and more.
+**Deploy:** see [`docs/deployment.md`](docs/deployment.md) (Hatchbox). Netlify cannot host this Rails app.
+
+See the [docs](https://buildermethods.com/rails-react-template) for everything else — what's inside, how to add pages, the design system, SSR, and more.
 
 ## Links
 

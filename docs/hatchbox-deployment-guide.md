@@ -1,6 +1,8 @@
 # Hatchbox deployment guide
 
-Quick reference for deploying an app generated from this template to Hatchbox. Steps are in the order you'd do them in the Hatchbox UI.
+Quick reference for deploying Folio (or any app from this Build New template) to Hatchbox. Steps are in the order you'd do them in the Hatchbox UI.
+
+For platform choice and the full env checklist (including why **Netlify is not an option**), see [`deployment.md`](./deployment.md).
 
 ## 1. Spin up a cluster (server)
 
@@ -31,23 +33,46 @@ App → **Environment**. At minimum:
 | Variable | Value | Notes |
 | --- | --- | --- |
 | `RAILS_MASTER_KEY` | Contents of `config/master.key` (or `config/credentials/production.key` if you've set up environment-scoped credentials) | Required. Do **not** commit the key file. |
-| `APP_HOST` | `https://yourdomain.com` | Used by `config/sitemap.rb` to build absolute URLs in `public/sitemap.xml`. Without it, the sitemap falls back to `https://example.com`. |
+| `APP_HOST` | `https://yourdomain.com` | Used by mailers and `config/sitemap.rb`. Without it, links and the sitemap fall back to `example.com`. |
 
-Optional / situational:
+Email (share + auth mail):
+
+| Variable | Value | Notes |
+| --- | --- | --- |
+| `RESEND_API_KEY` | Resend API key | Enables real delivery via the Resend gem. Without it, production mail is not configured for Resend. |
+| `MAIL_FROM` | `Folio <hello@yourdomain.com>` | Must use a domain verified in Resend. |
+
+File storage (Active Storage → Cloudflare R2):
+
+| Variable | Value | Notes |
+| --- | --- | --- |
+| `R2_ACCESS_KEY_ID` | R2 access key | All four required together; otherwise uploads go to local disk (lost on redeploy). |
+| `R2_SECRET_ACCESS_KEY` | R2 secret key | |
+| `R2_BUCKET` | Bucket name | |
+| `R2_ENDPOINT` | `https://<accountid>.r2.cloudflarestorage.com` | |
+| `R2_REGION` | `auto` | Optional; defaults to `auto`. |
+
+AI (optional but expected for Folio):
+
+| Variable | Value | Notes |
+| --- | --- | --- |
+| `OPENAI_API_KEY` | OpenAI API key | Required for **Describe with AI**, **Suggest tags**, and collection **Summarize**. Without it, those actions show an error and users can still write by hand. |
+| `OPENAI_MODEL` | `gpt-4o-mini` | Optional. Override the chat model (must support vision for image descriptions). |
+
+Other / situational:
 
 | Variable | Value | When to set it |
 | --- | --- | --- |
-| `INERTIA_SSR` | `1` or `0` | SSR is **on by default in production** (see `config/initializers/inertia_rails.rb`). Set `0` to force-disable, e.g. for debugging. |
+| `INERTIA_SSR` | `1` or `0` | SSR is **on by default in production**. Set `0` to force-disable, e.g. for debugging. |
 | `INERTIA_SSR_URL` | `http://localhost:13714` | Only needed if you move the SSR process to a non-default port. |
-| `DATABASE_URL` | postgres URL | Hatchbox usually sets this automatically when you attach the database (step 4). Only override if you're pointing at an external database. |
-| `OPENAI_API_KEY` | OpenAI API key | Required for **Describe with AI**, **Suggest tags**, and collection **Summarize**. Without it, those actions show an error and users can still write by hand. |
-| `OPENAI_MODEL` | `gpt-4o-mini` | Optional. Override the chat model (must support vision for image descriptions). |
+| `DATABASE_URL` | postgres URL | Hatchbox usually sets this when you attach the database (step 4). |
+| `SOLID_QUEUE_IN_PUMA` | `1` | Only for single-process deploys **without** a separate `jobs` process. Prefer the dedicated worker (step 7) and leave this unset. **Never** set this and also run `bin/jobs`. |
 
 ## 4. Create the database
 
 App → **Databases** → click the button to create a PostgreSQL database for this app. Hatchbox provisions it on the PostgreSQL-role server and wires `DATABASE_URL` into the app automatically.
 
-This single database is also used by Solid Queue, Solid Cache, and Solid Cable — no separate databases needed (see `CLAUDE.md`).
+This single database is also used by Solid Queue, Solid Cache, and Solid Cable — no separate databases needed (see `CLAUDE.md` / `AGENTS.md`).
 
 ## 5. Set up the domain
 
@@ -56,6 +81,12 @@ App → **Domains & SSL**:
 - Add your domain (e.g. `yourdomain.com` and/or `www.yourdomain.com`)
 - Point DNS at the Hatchbox server IP (A record for apex, CNAME for `www`)
 - Let Hatchbox auto-provision Let's Encrypt SSL once DNS propagates
+
+After DNS is live, update:
+
+- `public/robots.txt` — `Sitemap:` line
+- `public/llms.txt` — replace `https://example.com` with your origin
+- `APP_HOST` if you haven't already
 
 ## 6. Create the SSR process
 
@@ -86,6 +117,8 @@ App → **Processes** → Add Process. This runs Solid Queue.
 | Start command | `bin/jobs` |
 | Restart this process on every deploy | ✅ checked |
 
+Leave `SOLID_QUEUE_IN_PUMA` unset when using this process. Puma only embeds Solid Queue when that env var is explicitly `1`.
+
 ## 8. Deploy
 
 App → **Deploy**. Hatchbox will:
@@ -98,10 +131,12 @@ App → **Deploy**. Hatchbox will:
 
 ## Post-deploy checks
 
+- Visit `/up` — expect HTTP 200 (SSL redirect is skipped for this path).
 - Visit the site and **view source** on a public page — `<div id="app">` should contain rendered HTML, not be empty. If it's empty, SSR isn't reaching the Node process (check the `ssr` process logs in Hatchbox).
 - Visit `/sitemap.xml` (after deploy + sitemap regen) — URLs should use your real domain, not `example.com`. If they don't, `APP_HOST` isn't set.
 - Update `public/robots.txt` so the `Sitemap:` line points at your real domain (it ships pointing at `https://example.com/sitemap.xml`).
-- Trigger a background job to confirm Solid Queue is processing — check the `jobs` process logs.
+- Trigger a background job (share email or AI) to confirm Solid Queue is processing — check the `jobs` process logs.
+- Upload an image bookmark and confirm it persists (R2 configured).
 
 ## Troubleshooting
 
@@ -112,3 +147,9 @@ App → **Deploy**. Hatchbox will:
 **`Missing secret_key_base` or credentials errors.** `RAILS_MASTER_KEY` not set or doesn't match the encrypted credentials file in the repo.
 
 **Sitemap shows `example.com` URLs.** `APP_HOST` env var not set.
+
+**Uploads disappear after deploy.** R2 env vars missing — Active Storage fell back to local disk.
+
+**Emails not sending.** `RESEND_API_KEY` / `MAIL_FROM` missing, or the from-domain isn't verified in Resend.
+
+**Jobs run twice or fight each other.** Both `bin/jobs` and `SOLID_QUEUE_IN_PUMA=1` are active. Pick one.
