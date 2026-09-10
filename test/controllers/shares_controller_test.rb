@@ -28,6 +28,17 @@ class SharesControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Example Article"
   end
 
+  test "new from a bookmark page pre-fills title description and summary" do
+    bookmarks(:one).update!(summary: "A one-line overview of the article.")
+
+    get new_share_path, params: { bookmark_id: bookmarks(:one).id }
+    assert_response :success
+    assert_includes response.body, "Example Article"
+    assert_includes response.body, "A short snippet about design systems"
+    assert_includes response.body, "A one-line overview of the article."
+    assert_includes response.body, bookmark_path(bookmarks(:one))
+  end
+
   test "new without bookmarks redirects" do
     get new_share_path
     assert_redirected_to bookmarks_path
@@ -35,6 +46,11 @@ class SharesControllerTest < ActionDispatch::IntegrationTest
 
   test "cannot compose another user's collection" do
     get new_share_path, params: { collection_id: collections(:other_user).id }
+    assert_redirected_to bookmarks_path
+  end
+
+  test "cannot compose another user's bookmark" do
+    get new_share_path, params: { bookmark_id: bookmarks(:other_user).id }
     assert_redirected_to bookmarks_path
   end
 
@@ -84,6 +100,36 @@ class SharesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to bookmarks_path
     assert_nil share.collection_id
     assert_equal 1, ActionMailer::Base.deliveries.size
+  end
+
+  test "creates a bookmark-page share and redirects to the bookmark" do
+    perform_enqueued_jobs do
+      post shares_path, params: {
+        bookmark_id: bookmarks(:one).id,
+        bookmark_ids: [ bookmarks(:one).id ],
+        recipients: "a@example.com, b@example.com",
+        subject: "Example Article",
+        note: "Take a look",
+        body: "Example Article\nhttps://example.com/article\nA short snippet about design systems"
+      }
+    end
+
+    share = @user.shares.newest_first.first
+    assert_redirected_to bookmark_path(bookmarks(:one))
+    assert_nil share.collection_id
+    assert_equal %w[a@example.com b@example.com], share.recipients
+    assert_equal [ bookmarks(:one).id ], share.bookmark_ids
+
+    deliveries = ActionMailer::Base.deliveries
+    assert_equal 2, deliveries.size
+    assert_equal %w[a@example.com b@example.com], deliveries.map { |mail| mail.to.first }.sort
+    deliveries.each do |mail|
+      assert_equal 1, mail.to.size
+      other = mail.to.first == "a@example.com" ? "b@example.com" : "a@example.com"
+      refute_includes Array(mail.cc), other
+      refute_includes mail.to, other
+      assert_includes mail.html_part.body.to_s, "shared a find"
+    end
   end
 
   test "cannot share another user's bookmark" do

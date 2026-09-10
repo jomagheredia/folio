@@ -43,7 +43,9 @@ class Share < ApplicationRecord
     Array(bookmarks).each do |bookmark|
       lines = [ bookmark.title, bookmark.url.presence || "(visual)" ]
       description = bookmark.description.to_s.strip
+      summary = bookmark.summary.to_s.strip
       lines << description if description.present?
+      lines << summary if summary.present? && summary != description
       parts << lines.join("\n")
     end
 

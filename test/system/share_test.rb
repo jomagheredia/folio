@@ -27,7 +27,7 @@ class ShareSystemTest < ApplicationSystemTestCase
     find("input[aria-label='Select Example Article']").click
     js_click('a[href^="/shares/new"]')
 
-    assert_text "Share finds", wait: 10
+    assert_text "Share Example Article", wait: 10
     fill_react_field("recipients", "friend@example.com")
     fill_react_field("note", "A few finds")
     assert_field "Recipients", with: "friend@example.com"
@@ -35,6 +35,22 @@ class ShareSystemTest < ApplicationSystemTestCase
 
     assert_text "Sent to friend@example.com", wait: 10
     assert_current_path bookmarks_path
+  end
+
+  test "signed-in user can email a bookmark from its page" do
+    log_in_through_ui
+
+    visit bookmark_path(bookmarks(:one))
+    js_click("[data-testid='share-bookmark']")
+
+    assert_text "Share Example Article", wait: 10
+    fill_react_field("recipients", "friend@example.com, colleague@example.com")
+    fill_react_field("note", "Take a look")
+    refute_text "Remove from this email"
+    js_click("[data-testid='send-share']")
+
+    assert_text "Sent to friend@example.com and colleague@example.com", wait: 10
+    assert_current_path bookmark_path(bookmarks(:one))
   end
 
   private

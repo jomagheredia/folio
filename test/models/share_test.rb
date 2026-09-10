@@ -74,6 +74,15 @@ class ShareTest < ActiveSupport::TestCase
     assert_includes body, "A short snippet about design systems"
   end
 
+  test "default body includes a bookmark summary when present" do
+    @bookmark.update!(summary: "A one-line overview of the article.")
+
+    body = Share.default_body([ @bookmark ])
+    assert_includes body, "Example Article"
+    assert_includes body, "A short snippet about design systems"
+    assert_includes body, "A one-line overview of the article."
+  end
+
   test "destroying a bookmark keeps the share snapshot" do
     share = shares(:spring_sent)
     assert_difference -> { Bookmark.count }, -1 do

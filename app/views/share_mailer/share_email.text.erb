@@ -1,4 +1,4 @@
-<%= @sender.email %> shared finds with you via Folio.
+<%= @sender.email %> shared <%= @items.size == 1 ? "a find" : "finds" %> with you via Folio.
 
 <% if @share.note.present? -%>
 <%= @share.note %>

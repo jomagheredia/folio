@@ -13,6 +13,7 @@ import type { PageProps } from "@/types/inertia"
 type Props = {
   collection: ShareCollection | null
   bookmarks: BookmarkCardData[]
+  bookmark_id: number | null
   defaults: {
     subject: string
     body: string
@@ -23,6 +24,7 @@ type Props = {
 export default function SharesNew({
   collection,
   bookmarks: initialBookmarks,
+  bookmark_id = null,
   defaults,
   cancel_path,
 }: Props) {
@@ -31,6 +33,7 @@ export default function SharesNew({
   const [items, setItems] = useState(initialBookmarks)
   const [generatedSubject, setGeneratedSubject] = useState(defaults.subject)
   const [generatedBody, setGeneratedBody] = useState(defaults.body)
+  const singleBookmark = !collection && initialBookmarks.length === 1
 
   const form = useForm({
     recipients: "",
@@ -38,6 +41,7 @@ export default function SharesNew({
     note: "",
     body: defaults.body,
     collection_id: collection?.id?.toString() ?? "",
+    bookmark_id: bookmark_id?.toString() ?? "",
     bookmark_ids: initialBookmarks.map((bookmark) => bookmark.id),
   })
 
@@ -63,20 +67,21 @@ export default function SharesNew({
     form.post("/shares", { preserveState: true })
   }
 
-  const title = collection ? `Share ${collection.name}` : "Share finds"
+  const title = collection
+    ? `Share ${collection.name}`
+    : singleBookmark
+      ? `Share ${initialBookmarks[0].title}`
+      : "Share finds"
+  const metaDescription = singleBookmark
+    ? "Email this bookmark. Recipients do not need a Folio account."
+    : "Email a collection or a selection of bookmarks. Recipients do not need a Folio account."
 
   return (
     <>
       <Head title={title}>
-        <meta
-          name="description"
-          content="Email a collection or a selection of bookmarks. Recipients do not need a Folio account."
-        />
+        <meta name="description" content={metaDescription} />
         <meta property="og:title" content={title} />
-        <meta
-          property="og:description"
-          content="Email a collection or a selection of bookmarks. Recipients do not need a Folio account."
-        />
+        <meta property="og:description" content={metaDescription} />
       </Head>
       <AppShell wide>
         <PageHeader
@@ -165,18 +170,22 @@ export default function SharesNew({
           ) : (
             <BookmarkGrid
               bookmarks={items}
-              renderFooter={(bookmark) => (
-                <div className="px-4 pb-4">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => dropItem(bookmark.id)}
-                  >
-                    Remove from this email
-                  </Button>
-                </div>
-              )}
+              renderFooter={
+                items.length > 1
+                  ? (bookmark) => (
+                      <div className="px-4 pb-4">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => dropItem(bookmark.id)}
+                        >
+                          Remove from this email
+                        </Button>
+                      </div>
+                    )
+                  : undefined
+              }
             />
           )}
         </section>
