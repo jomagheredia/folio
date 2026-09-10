@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Restart a Procfile command if it crashes, so Foreman/Hivemind do not
+# tear down Rails + Vite + jobs together. Clean signals (INT/TERM, or a
+# 0 exit) stop the loop so `bin/dev` can still shut down.
+set -u
+
+term() {
+  if [[ -n "${child:-}" ]]; then
+    kill -TERM "$child" 2>/dev/null || true
+    wait "$child" 2>/dev/null || true
+  fi
+  exit 0
+}
+
+trap term INT TERM
+
+if [[ $# -eq 0 ]]; then
+  echo "usage: bin/keep-alive <command> [args...]" >&2
+  exit 1
+fi
+
+while true; do
+  "$@" &
+  child=$!
+  wait "$child"
+  code=$?
+
+  if [[ $code -eq 0 || $code -eq 130 || $code -eq 143 ]]; then
+    exit "$code"
+  fi
+
+  echo "$(date -Iseconds) $1 exited with $code; restarting in 1s" >&2
+  sleep 1
+done

@@ -28,7 +28,11 @@ threads_count = ENV.fetch("RAILS_MAX_THREADS", 3)
 threads threads_count, threads_count
 
 # Specifies the `port` that Puma will listen on to receive requests; default is 3000.
-port ENV.fetch("PORT", 3000)
+# Puma 7 / Rails 8 default to localhost, which is IPv6-only on many machines
+# (`::1`) and invisible to Cloud Agent / Docker port forwarding. Bind all
+# IPv4 addresses in development so http://127.0.0.1:PORT keeps working.
+listen_host = ENV.fetch("BIND") { Rails.env.development? ? "0.0.0.0" : nil }
+port ENV.fetch("PORT", 3000), listen_host
 
 # Allow puma to be restarted by `bin/rails restart` command.
 plugin :tmp_restart
