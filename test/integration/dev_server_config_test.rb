@@ -4,11 +4,11 @@ require "test_helper"
 require "json"
 
 class DevServerConfigTest < ActiveSupport::TestCase
-  test "development and test Vite hosts are IPv4 loopback so Rails can reach the dev server" do
+  test "development Vite host is IPv4 loopback so Rails can reach the dev server" do
     config = JSON.parse(File.read(Rails.root.join("config/vite.json")))
 
     assert_equal "127.0.0.1", config.dig("development", "host")
-    assert_equal "127.0.0.1", config.dig("test", "host")
+    assert_nil config.dig("test", "host")
   end
 
   test "Procfile.dev keeps processes alive and binds Rails on all IPv4 addresses" do
@@ -27,6 +27,6 @@ class DevServerConfigTest < ActiveSupport::TestCase
     assert_includes source, "restarting in 1s"
     assert_includes source, "setsid"
     assert_includes source, "stopping=0"
-    refute_includes source, 'code -eq 143'
+    refute_includes source, "code -eq 143"
   end
 end
