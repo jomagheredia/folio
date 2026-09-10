@@ -25,7 +25,8 @@ class DevServerConfigTest < ActiveSupport::TestCase
     assert keep_alive.executable?, "#{keep_alive} should be executable"
     source = keep_alive.read
     assert_includes source, "restarting in 1s"
-    assert_includes source, "setsid"
+    assert_includes source, "command -v setsid"
+    assert_includes source, "use_setsid"
     assert_includes source, "stopping=0"
     refute_includes source, "code -eq 143"
   end

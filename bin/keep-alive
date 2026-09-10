@@ -7,16 +7,28 @@ set -u
 
 stopping=0
 child=""
+# Linux has setsid(1); macOS does not. Isolated process groups let us reap
+# npm/node grandchildren without signaling Foreman's group. Without setsid
+# we only signal the direct child PID.
+if command -v setsid >/dev/null 2>&1; then
+  use_setsid=1
+else
+  use_setsid=0
+fi
 
 stop_child() {
   if [[ -z "$child" ]]; then
     return
   fi
-  # Child runs in its own process group (setsid) so we can reap npm/node
-  # grandchildren without signaling Foreman's group.
-  kill -TERM -"$child" 2>/dev/null || kill -TERM "$child" 2>/dev/null || true
+  if [[ $use_setsid -eq 1 ]]; then
+    kill -TERM -"$child" 2>/dev/null || kill -TERM "$child" 2>/dev/null || true
+  else
+    kill -TERM "$child" 2>/dev/null || true
+  fi
   wait "$child" 2>/dev/null || true
-  kill -KILL -"$child" 2>/dev/null || true
+  if [[ $use_setsid -eq 1 ]]; then
+    kill -KILL -"$child" 2>/dev/null || true
+  fi
 }
 
 term() {
@@ -32,16 +44,27 @@ if [[ $# -eq 0 ]]; then
   exit 1
 fi
 
+stamp() {
+  date -Iseconds 2>/dev/null || date "+%Y-%m-%dT%H:%M:%S%z"
+}
+
 while true; do
-  setsid "$@" &
+  if [[ $use_setsid -eq 1 ]]; then
+    setsid "$@" &
+  else
+    "$@" &
+  fi
   child=$!
   wait "$child"
   code=$?
   leftover=$child
   child=""
-  # Reap any leftover descendants holding the port (e.g. node after npm dies).
-  kill -TERM -"$leftover" 2>/dev/null || true
-  kill -KILL -"$leftover" 2>/dev/null || true
+  # Reap leftover descendants holding the port (e.g. node after npm dies).
+  # Only safe when the child is its own process group leader (setsid).
+  if [[ $use_setsid -eq 1 ]]; then
+    kill -TERM -"$leftover" 2>/dev/null || true
+    kill -KILL -"$leftover" 2>/dev/null || true
+  fi
 
   if [[ $stopping -eq 1 ]]; then
     exit 0
@@ -54,6 +77,6 @@ while true; do
     exit 0
   fi
 
-  echo "$(date -Iseconds) $1 exited with $code; restarting in 1s" >&2
+  echo "$(stamp) $1 exited with $code; restarting in 1s" >&2
   sleep 1
 done
